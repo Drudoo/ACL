@@ -1,0 +1,17 @@
+net user admin ya84*_o
+net group Administrators
+net group Administrators admin
+net group Users
+login admin ya84*_o
+net user alice Wvu_4_Life
+net user bob SHHHsecret
+net group Students
+net group Students alice
+net group Students bob
+net user tom geek_247
+logout
+login alice Wvu_4_Life
+create file1.txt
+logout
+login bob SHHHsecret
+create file2.txt

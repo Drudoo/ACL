@@ -12,7 +12,7 @@ struct Users {
 	string password;
 };
 
-string arg1, arg2;
+string arg1, arg2, arg3, arg4;
 string u, p, g;
 Users *listUsers = new Users[10];
 bool isLoggedIn;
@@ -21,6 +21,7 @@ string whosLoggedIn;
 bool wrongUsername, wrongPassword;
 bool isFirstRun = true;
 int groupCount = 0;
+int numberOfUsers = 0;
 bool groupExists = false;
 int checkSetup(vector<string> instructions);
 int checkUsername(string username);
@@ -29,8 +30,9 @@ void login(string username, string password);
 void logout();
 bool createUser(string username, string password, int count);
 bool createGroup(string groupname, int count);
-bool isAdmin(string username, int count);
+bool isAdmin(string username);
 bool addToGroup(string username, string groupname, int count);
 bool groupExist(string groupname);
 bool userExist(string username);
+void createFile(string filename);
 vector<string> getUserGroup(string username, int count);

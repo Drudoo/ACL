@@ -34,9 +34,6 @@ int main(int argc, char const *argv[]) {
 
 	if (checkSetup(instructions)!=0) return 1;
 
-	int count = 0;
-
-
 	for (size_t i = 0; i < instructions.size(); i++) {
 		istringstream in(instructions[i]);
 		in >> arg1;
@@ -47,24 +44,22 @@ int main(int argc, char const *argv[]) {
 				u = "";
 				in >> g >> u;
 				if(u=="") {
-					if (createGroup(g, count)) {
+					if (createGroup(g, numberOfUsers)) {
 						groupCount++;
 					} else {
 						cout << "Error: only an Administrator may issue net group command" << endl;
 					}
 				} else {
-					if (addToGroup(u, g, count)) {
+					if (addToGroup(u, g, numberOfUsers)) {
 						cout << "User " << u << " added to group " << g << endl;
-					} else {
-						cout << "Error: only an Administrator may issue net group command" << endl;
 					}
 				}
 			}
 
 			if (arg2 == "user") {
 				in >> u >> p;
-				if(createUser(u, p, count)) {
-					count++;
+				if(createUser(u, p, numberOfUsers)) {
+					numberOfUsers++;
 				}
 			}
 		}
@@ -81,12 +76,17 @@ int main(int argc, char const *argv[]) {
 			logout();
 		}
 
+		if (arg1 == "create") {
+			in >> arg2;
+			createFile(arg2);
+		}
+
 	}
 
 	cout << "_________ TEST OUTPUT __ STRUCT _______" << endl;
 
 
-	for (size_t i = 0; i < count; i++) {
+	for (size_t i = 0; i < numberOfUsers; i++) {
 		cout << listUsers[i].username << " ";
 		for (size_t j = 0; j < listUsers[i].groups.size(); j++) {
 			cout << listUsers[i].groups[j] << " ";
@@ -114,18 +114,36 @@ int main(int argc, char const *argv[]) {
 	}
 	cout << "_________ TEST OUTPUT _________" << endl;
 
-	for (size_t i = 0; i < count; i++) {
+	for (size_t i = 0; i < numberOfUsers; i++) {
 		cout << listUsers[i].username << endl;
 	}
 
 	return 0;
 }
 
-bool addToGroup(string username, string groupname, int count) {
+void createFile(string filename) {
+	fstream myFile;
+	myFile.open(filename, ios_base::out | ios_base::in);  // will not create file
+
+	if (myFile.is_open()) {
+		remove(filename.c_str());
+	}
+	myFile.close();
+	myFile.open(filename, ios_base::app);
+	myFile.close();
+	cout << "File " << filename << " with owner " << whosLoggedIn << " and default permissions created" << endl;
+	if (isAdmin(whosLoggedIn)) {
+		//permissions: Users group is assigned Read access as well.
+	} else {
+		// The file owner / creator and the Administrators group : Full control.
+	}
+}
+
+bool addToGroup(string username, string groupname, int numberOfUsers) {
 	int temp;
 	bool foundUser = false;
-	if (groupCount == 1 || isAdmin(whosLoggedIn, count)) {
-		for (size_t m = 0; m < count; m++) {
+	if (groupCount == 1 || isAdmin(whosLoggedIn)) {
+		for (size_t m = 0; m < numberOfUsers; m++) {
 			if (username == listUsers[m].username) {
 				temp = m;
 				foundUser = true;
@@ -139,21 +157,19 @@ bool addToGroup(string username, string groupname, int count) {
 					return true;
 				}
 			}
-		}
-
-		if (foundUser) {
 			cout << "Group " << groupname << " does not exist" << endl;
 		} else {
 			cout << "User " << username << " does not exist" << endl;
 		}
+	} else {
+		cout << "Error: only an Administrator may issue net group command" << endl;
 	}
-
 	return false;
 }
 
-bool createGroup(string groupname, int count) {
+bool createGroup(string groupname, int numberOfUsers) {
 	if (groupCount>0) {
-		if (isAdmin(whosLoggedIn, count)) {
+		if (isAdmin(whosLoggedIn)) {
 			for (size_t j = 0; j < groupCount; j++) {
 				if (g == groups[j][0]) {
 					groupExists = true;
@@ -178,8 +194,9 @@ bool createGroup(string groupname, int count) {
 	return true;
 }
 
-bool isAdmin(string username, int count) {
-	vector<string> userGroup = getUserGroup(whosLoggedIn, count);
+bool isAdmin(string username) {
+
+	vector<string> userGroup = getUserGroup(whosLoggedIn, numberOfUsers);
 
 	if (find(userGroup.begin(), userGroup.end(), "Administrators") != userGroup.end() || isFirstRun) {
 		return true;
@@ -188,14 +205,14 @@ bool isAdmin(string username, int count) {
 	}
 }
 
-bool createUser(string username, string password, int count) {
+bool createUser(string username, string password, int numberOfUsers) {
 
-	if (isAdmin(whosLoggedIn, count)) {
+	if (isAdmin(whosLoggedIn)) {
 		if (!(find(groups[1].begin(), groups[1].end(), username) != groups[1].end())) {
 			if (!checkUsername(username)) {
 				groups[1].push_back(username);
-				listUsers[count].groups.push_back("Users");
-				listUsers[count].username = username;
+				listUsers[numberOfUsers].groups.push_back("Users");
+				listUsers[numberOfUsers].username = username;
 				cout << "User " << username << " created" << endl;
 				myAccounts.open("accounts.txt", std::ios_base::app);
 				myAccounts << username << " " << password << endl;
@@ -283,9 +300,9 @@ void login(string username, string password) {
 	myAccounts.close();
 }
 
-vector<string> getUserGroup(string username, int count) {
+vector<string> getUserGroup(string username, int numberOfUsers) {
 	vector<string> userGroups;
-	for (size_t i = 0; i < count; i++) {
+	for (size_t i = 0; i < numberOfUsers; i++) {
 		if (username == listUsers[i].username) {
 			//cout << "_-_ " << username << " ";
 			for (size_t j = 0; j < listUsers[i].groups.size(); j++) {
