@@ -1,0 +1,49 @@
+net user admin @r00t(705)
+net group Administrators
+net group Administrators admin 
+net group Users
+login admin @r00t(705) 
+net user steveo d@man^304 
+net user rita #101'holla! 
+net group testers 
+net group visitors
+net user steveo tada043.,;
+net user fred j8M5#B2*
+net group visitors fred
+logout 
+login steve d@man^304 
+login steveo d@man^304 
+create script 
+write script echo Hello World! 
+xcacls script /E /P steveo:WX
+xcacls script /E /G testers:RW
+xcacls script /E /G users:X
+execute script 
+read script
+logout 
+login admin @r00t(705)
+net user rita #101'holla! 
+net group testers 
+net group testers rita
+net group testers steveo
+create script3 
+logout 
+login rita #101'holla! 
+create script 
+write script echo Hello World! 
+read script 
+execute script 
+net group developers 
+net user stew awwShucks 
+logout
+login steveo d@man^304
+xcacls script /E /D rita
+xcacls script /E /D visitors
+logout
+login rita #101'holla!
+read script
+logout
+login fred j8M5#B2*
+execute script
+logout
+end 

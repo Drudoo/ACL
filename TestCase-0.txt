@@ -1,0 +1,34 @@
+net user admin ya84*_o
+net group Administrators
+net group Administrators admin
+net group Users
+login admin ya84*_o
+net user fred j8M5#B2*
+net group Testers
+net group Testers fred
+net group Testers
+net user bob abc123
+net group Testers bob
+net user alice here#B2*
+net group Testers alice
+logout
+login alice here#B2*
+net user root ssh123
+login bob adc123
+logout
+login fred j8M5#B2*
+net user root ssh123
+net group Developers
+logout
+login admin ya84*_o
+net user root ssh123
+net group Administrators root
+logout
+login root ssh123
+net user boss adc412"
+net group Hackers boss
+net group Testers rachel
+logout
+login alice here#B2*
+net group Testers rachel
+exit

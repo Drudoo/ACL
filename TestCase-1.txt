@@ -1,0 +1,35 @@
+net user admin ya84*_o
+net group Administrators
+net group Administrators admin
+net group Users
+login admin ya84*_o
+net user alice Wvu_4_Life
+net user bob SHHHsecret
+net group Students
+net group Students alice
+net group Students bob
+net user tom geek_247
+logout
+login alice Wvu_4_Life
+create file1.txt
+write file1.txt Text from Alice in file1
+create file2.txt
+write file2.txt Text from Alice in file2
+xcacls file2.txt /E /G Users:R
+xcacls file2.txt /E /G Students:RW
+logout
+login tom geek_247
+read file1.txt
+read file2.txt
+write file2.txt Text from Tom in file2
+login bob SHHsecret
+logout
+login bob SHHsecret
+login bob SHHHsecret
+write file2.txt Text from Bob in file2
+read file2.txt
+logout
+login tom geek_247
+xcacls file1.txt /D alice
+logout
+end
