@@ -20,3 +20,8 @@ login admin ya84*_o
 create file2.txt
 logout
 create file3.txt
+login bob SHHHsecret
+create file3.txt
+logout
+login admin ya84*_o
+write file2.txt Text from Admin in file2

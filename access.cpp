@@ -88,6 +88,13 @@ int main(int argc, char const *argv[]) {
 			in >> arg2;
 			createFile(arg2);
 		}
+		if (arg1 == "write") {
+			in >> arg2;
+			string text;
+			getline(in, text);
+			text.erase(0,1);
+			writeFile(arg2, text);
+		}
 
 	}
 
@@ -183,7 +190,62 @@ void setPermissions(string filename) {
 	}
 }
 
+string getPermissions(string filename, string username) {
+	vector<string> group;
+	group = getUserGroup(username);
+	string highestUserPermissionLevel = "";
+	string highestGroupPermissionLevel = "";
+
+	for (size_t i = 0; i < permissions[filename].size(); i++) {
+		if (permissions[filename][i] == (whosLoggedIn+":F")) {
+			highestUserPermissionLevel = "F";
+		}
+		if (permissions[filename][i] == (whosLoggedIn+":R")) {
+			highestUserPermissionLevel = "R";
+		}
+		if (permissions[filename][i] == (whosLoggedIn+":X")) {
+			highestUserPermissionLevel = "X";
+		}
+		if (permissions[filename][i] == (whosLoggedIn+":W")) {
+			highestUserPermissionLevel = "W";
+		}
+		if (permissions[filename][i] == (whosLoggedIn+":D")) {
+			highestUserPermissionLevel = "D";
+		}
+	}
+
+	for (size_t i = 0; i < permissions[filename].size(); i++) {
+		for (size_t j = 0; j < group.size(); j++) {
+			if (permissions[filename][i] == (group[j]+":F")) {
+				highestGroupPermissionLevel = "F";
+			}
+			if (permissions[filename][i] == (group[j]+":R")) {
+				highestGroupPermissionLevel = "R";
+			}
+			if (permissions[filename][i] == (group[j]+":X")) {
+				highestGroupPermissionLevel = "X";
+			}
+			if (permissions[filename][i] == (group[j]+":W")) {
+				highestGroupPermissionLevel = "W";
+			}
+			if (permissions[filename][i] == (group[j]+":D")) {
+				highestGroupPermissionLevel = "D";
+			}
+		}
+	}
+
+	return (highestUserPermissionLevel == "")?highestGroupPermissionLevel:highestUserPermissionLevel;
+}
+
 void writeFile(string filename, string text) {
+	string userPermissions = getPermissions(filename, whosLoggedIn);
+	fstream myFile;
+	if (userPermissions == "F" || userPermissions == "W") {
+		myFile.open(filename, std::ios_base::app);
+		myFile << text << endl;
+		myFile.close();
+		cout << "User " << whosLoggedIn << " wrote to " << filename << ": Text from Alice in file2" << endl;
+	}
 
 }
 void readFile(string filename) {
@@ -247,7 +309,7 @@ bool createGroup(string groupname, int numberOfUsers) {
 
 bool isAdmin(string username) {
 
-	vector<string> userGroup = getUserGroup(whosLoggedIn, numberOfUsers);
+	vector<string> userGroup = getUserGroup(whosLoggedIn);
 
 	if (find(userGroup.begin(), userGroup.end(), "Administrators") != userGroup.end() || isFirstRun) {
 		return true;
@@ -351,7 +413,7 @@ void login(string username, string password) {
 	myAccounts.close();
 }
 
-vector<string> getUserGroup(string username, int numberOfUsers) {
+vector<string> getUserGroup(string username) {
 	vector<string> userGroups;
 	for (size_t i = 0; i < numberOfUsers; i++) {
 		if (username == listUsers[i].username) {

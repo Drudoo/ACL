@@ -36,9 +36,10 @@ bool addToGroup(string username, string groupname, int count);
 bool groupExist(string groupname);
 bool userExist(string username);
 void createFile(string filename);
-vector<string> getUserGroup(string username, int count);
+vector<string> getUserGroup(string username);
 
 map<string, vector<string> > permissions;
 void setPermissions(string filename);
 void writeFile(string filename, string text);
 void readFile(string filename);
+string getPermissions(string filename, string username);
