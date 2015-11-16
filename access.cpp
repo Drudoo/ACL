@@ -8,8 +8,8 @@ int main(int argc, char const *argv[]) {
 
 	//JUST FOR DEBUG. PLEASE DELETE!
 
-	permissions["Filename "].push_back("Owner: ");
-	permissions["Filename "].push_back("Permissions: ");
+	permissions["Filename "].push_back("Owner");
+	permissions["Filename "].push_back("Permissions");
 
 	//-------------------------------!!!!
 
@@ -40,6 +40,13 @@ int main(int argc, char const *argv[]) {
 	myAccounts.open ("accounts.txt");
 	myAccounts.close();
 
+	myAudit.open("audit.txt", ios_base::out | ios_base::in);
+	if (myAudit.is_open()) {
+		remove("audit.txt");
+	}
+	myAudit.open("audit.txt", ios_base::app);
+	myAudit.close();
+
 	if (checkSetup(instructions)!=0) return 1;
 
 	for (size_t i = 0; i < instructions.size(); i++) {
@@ -60,6 +67,9 @@ int main(int argc, char const *argv[]) {
 				} else {
 					if (addToGroup(u, g, numberOfUsers)) {
 						cout << "User " << u << " added to group " << g << endl;
+						myAudit.open("audit.txt", ios_base::app);
+						myAudit << "User " << u << " added to group " << g << endl;
+						myAudit.close();
 					}
 				}
 			}
@@ -76,6 +86,9 @@ int main(int argc, char const *argv[]) {
 			in >> u >> p;
 			if(isLoggedIn) {
 				cout << "Login failed: simultaneous login not permitted" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "Login failed: simultaneous login not permitted" << endl;
+				myAudit.close();
 			} else {
 				login(u,p);
 			}
@@ -104,10 +117,17 @@ int main(int argc, char const *argv[]) {
 				editPermissions(filename, newPermissions, uORg);
 			} else {
 				in >> uORg;
-				cout << ">> " << filename << " " << arg2 << " " << uORg << endl;
-				// replacePermissions
+				//cout << ">> " << filename << " " << arg2 << " " << uORg << endl;
+				replacePermissions(filename,newPermissions, uORg);
+
 
 			}
+		}
+
+		if (arg1 == "read") {
+			string filename;
+			in >> filename;
+			readFile(filename);
 		}
 
 	}
@@ -153,6 +173,22 @@ int main(int argc, char const *argv[]) {
 		cout << endl;
 	}
 
+	cout << "_________TEST-OUTPUT__Files________" << endl;
+	string line;
+
+	myAccounts.open("file1.txt");
+	while (getline(myAccounts,line)) {
+		cout << line << endl;
+	}
+	myAccounts.close();
+	myAccounts.open("file2.txt");
+	while (getline(myAccounts,line)) {
+		cout << line << endl;
+	}
+	myAccounts.close();
+
+
+
 	return 0;
 }
 
@@ -161,18 +197,44 @@ void editPermissions(string filename, string newPermissions, string uORg) {
 		if (fileExist(filename)) {
 			if (isOwner(filename,whosLoggedIn) || isAdmin(whosLoggedIn)) {
 				permissions[filename].push_back(newPermissions);
+				cout << "The ACL for " << filename << " appended by " << whosLoggedIn << " to include " << newPermissions << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "The ACL for " << filename << " appended by " << whosLoggedIn << " to include " << newPermissions << endl;
+				myAudit.close();
+			} else {
+				cout << "Error with xcacls: Only file owner or member of Administrators group may run command" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "Error with xcacls: Only file owner or member of Administrators group may run command" << endl;
+				myAudit.close();
 			}
-			//cout << ">> isAdmin(" << whosLoggedIn << "): " << (isAdmin(whosLoggedIn)?"true":"false") << endl;
-			//cout << ">> isOwner(" << whosLoggedIn << "): " << (isOwner(filename, whosLoggedIn)?"true":"false") << endl;
 		} else {
 			cout << "Error: File " << filename << " does not exist" << endl;
+			myAudit.open("audit.txt", ios_base::app);
+			myAudit << "Error: File " << filename << " does not exist" << endl;
+			myAudit.close();
 		}
 	} else {
 		cout << "Error: Please login to change permissions file" << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "Error: Please login to change permissions file" << endl;
+		myAudit.close();
 	}
 }
-void replacePermissions(string filename, string newPermissions, string uORg) {
 
+
+void replacePermissions(string filename, string newPermissions, string uORg) {
+	if (isLoggedIn) {
+		if (fileExist(filename)) {
+			if (isOwner(filename,whosLoggedIn) || isAdmin(whosLoggedIn)) {
+
+			} else {
+				cout << "Error with xcacls: Only file owner or member of Administrators group may run command" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "Error with xcacls: Only file owner or member of Administrators group may run command" << endl;
+				myAudit.close();
+			}
+		}
+	}
 }
 
 bool fileExist(string filename) {
@@ -184,21 +246,31 @@ void createFile(string filename) {
 		fstream myFile;
 		myFile.open(filename, ios_base::out | ios_base::in);  // will not create file
 
-		if (myFile.is_open()) {
+		/*if (myFile.is_open()) {
 			remove(filename.c_str());
+			cout << ">> REMOVED: " << filename << endl;
 		}
 		myFile.close();
-
+*/
 		if (!fileExist(filename)) {
 			myFile.open(filename, ios_base::app);
 			myFile.close();
 			cout << "File " << filename << " with owner " << whosLoggedIn << " and default permissions created" << endl;
+			myAudit.open("audit.txt", ios_base::app);
+			myAudit << "File " << filename << " with owner " << whosLoggedIn << " and default permissions created" << endl;
+			myAudit.close();
 			setPermissions(filename);
 		} else {
 			cout << "Error: file " << filename << " already exists" << endl;
+			myAudit.open("audit.txt", ios_base::app);
+			myAudit << "Error: file " << filename << " already exists" << endl;
+			myAudit.close();
 		}
 	} else {
 		cout << "Error: Please login to create file" << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "Error: Please login to create file" << endl;
+		myAudit.close();
 	}
 
 }
@@ -268,7 +340,7 @@ string getPermissions(string filename, string username) {
 }
 
 bool canWrite(string userPermissions) {
-	if (userPermissions.find("R") != std::string::npos) {
+	if (userPermissions.find("W") != std::string::npos) {
     	return true;
 	} else if (userPermissions.find("F") != std::string::npos) {
 		return true;
@@ -281,16 +353,70 @@ void writeFile(string filename, string text) {
 	string userPermissions = getPermissions(filename, whosLoggedIn);
 	fstream myFile;
 	//cout << ">> permissions for " << whosLoggedIn << " is " << userPermissions << " and canWrite: " <<  (canWrite(userPermissions)?"true":"false") << endl;
+
 	if (canWrite(userPermissions)) {
 		myFile.open(filename, std::ios_base::app);
 		myFile << text << endl;
 		myFile.close();
 		cout << "User " << whosLoggedIn << " wrote to " << filename << ": " << text << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "User " << whosLoggedIn << " wrote to " << filename << ": " << text << endl;
+		myAudit.close();
+	} else {
+		cout << "User " << whosLoggedIn << " denied write access to " << filename << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "User " << whosLoggedIn << " denied write access to " << filename << endl;
+		myAudit.close();
 	}
 
 }
 void readFile(string filename) {
+	string userPermissions = getPermissions(filename,whosLoggedIn);
+	if (isLoggedIn) {
+		if (fileExist(filename)) {
+			if (canRead(userPermissions)) {
+				fstream myFile;
+				string line;
+				myFile.open(filename);
+				cout << "User " << whosLoggedIn << " read " << filename << " as:" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "User " << whosLoggedIn << " read " << filename << " as:" << endl;
 
+				while (getline(myFile,line)) {
+					cout << line << endl;
+					myAudit << line << endl;
+				}
+				myAudit.close();
+				myFile.close();
+			} else {
+				cout << "User " << whosLoggedIn << " denied read access to " << filename << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "User " << whosLoggedIn << " denied read access to " << filename << endl;
+				myAudit.close();
+			}
+		} else {
+			cout << "Error: File " << filename << " does not exist" << endl;
+			myAudit.open("audit.txt", ios_base::app);
+			myAudit << "Error: File " << filename << " does not exist" << endl;
+			myAudit.close();
+		}
+	} else {
+		cout << "Error: no user logged in" << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "Error: no user logged in" << endl;
+		myAudit.close();
+	}
+
+}
+
+bool canRead(string userPermissions) {
+	if (userPermissions.find("R") != std::string::npos) {
+    	return true;
+	} else if (userPermissions.find("F") != std::string::npos) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool addToGroup(string username, string groupname, int numberOfUsers) {
@@ -312,11 +438,20 @@ bool addToGroup(string username, string groupname, int numberOfUsers) {
 				}
 			}
 			cout << "Group " << groupname << " does not exist" << endl;
+			myAudit.open("audit.txt", ios_base::app);
+			myAudit << "Group " << groupname << " does not exist" << endl;
+			myAudit.close();
 		} else {
 			cout << "User " << username << " does not exist" << endl;
+			myAudit.open("audit.txt", ios_base::app);
+			myAudit << "User " << username << " does not exist" << endl;
+			myAudit.close();
 		}
 	} else {
 		cout << "Error: only an Administrator may issue net group command" << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "Error: only an Administrator may issue net group command" << endl;
+		myAudit.close();
 	}
 	return false;
 }
@@ -333,8 +468,14 @@ bool createGroup(string groupname, int numberOfUsers) {
 			if (!groupExists) {
 				groups[groupCount][0] = g;
 				cout << "Group " << g << " created" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "Group " << g << " created" << endl;
+				myAudit.close();
 			} else {
 				cout << "Error: Group " << g << " already exists" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "Error: Group " << g << " already exists" << endl;
+				myAudit.close();
 				groupCount--;
 			}
 			groupExists=false;
@@ -344,6 +485,9 @@ bool createGroup(string groupname, int numberOfUsers) {
 	} else {
 		groups[groupCount][0] = g;
 		cout << "Group " << g << " created" << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "Group " << g << " created" << endl;
+		myAudit.close();
 	}
 	return true;
 }
@@ -372,18 +516,34 @@ bool createUser(string username, string password, int numberOfUsers) {
 				listUsers[numberOfUsers].groups.push_back("Users");
 				listUsers[numberOfUsers].username = username;
 				cout << "User " << username << " created" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "User " << username << " created" << endl;
+				myAudit.close();
 				myAccounts.open("accounts.txt", std::ios_base::app);
 				myAccounts << username << " " << password << endl;
 				myAccounts.close();
 				isFirstRun = false;
+
+				// DEBUG:
+				cout << "Notify only on change" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "Notify only on change" << endl;
+				myAudit.close();
+				// -------
 			}
 		} else {
 			cout << "Error: user " << username << " already exists" << endl;
+			myAudit.open("audit.txt", ios_base::app);
+			myAudit << "Error: user " << username << " already exists" << endl;
+			myAudit.close();
 			return false;
 		}
 		return true;
 	} else {
 		cout << "Error: only an Administrator may issue net user command" << endl;
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "Error: only an Administrator may issue net user command" << endl;
+		myAudit.close();
 		return false;
 	}
 }
@@ -446,6 +606,9 @@ void login(string username, string password) {
 		if (u.compare(username) == 0) {
 			if (p.compare(password) == 0) {
 				cout << "User " << u << " logged in" << endl;
+				myAudit.open("audit.txt", ios_base::app);
+				myAudit << "User " << u << " logged in" << endl;
+				myAudit.close();
 				whosLoggedIn = u;
 				isLoggedIn = true;
 				wrongPassword = false;
@@ -454,6 +617,9 @@ void login(string username, string password) {
 	}
 	if (!isLoggedIn && wrongUsername && wrongPassword) {
 		cout << "Login failed: invalid username or password" << endl; //  or password
+		myAudit.open("audit.txt", ios_base::app);
+		myAudit << "Login failed: invalid username or password" << endl;
+		myAudit.close();
 	}
 	myAccounts.close();
 }
@@ -475,6 +641,9 @@ vector<string> getUserGroup(string username) {
 
 void logout() {
 	cout << "User " << whosLoggedIn << " logged out" << endl;
+	myAudit.open("audit.txt", ios_base::app);
+	myAudit << "User " << whosLoggedIn << " logged out" << endl;
+	myAudit.close();
 	whosLoggedIn = "";
 	isLoggedIn = false;
 
