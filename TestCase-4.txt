@@ -12,16 +12,26 @@ net user tom geek_247
 logout
 login alice Wvu_4_Life
 create file1.txt
+write file1.txt Text from Alice in file1
+create file2.txt
+write file2.txt Text from Alice in file2
+xcacls file2.txt /E /G Users:R
 logout
 login bob SHHHsecret
-create file2.txt
+xcacls file2.txt /E /G Students:RW
 logout
-login admin ya84*_o
-create file2.txt
+login tom geek_247
+read file1.txt
+read file2.txt
+write file2.txt Text from Tom in file2
+login bob SHHsecret
 logout
-create file3.txt
+login bob SHHsecret
 login bob SHHHsecret
-create file3.txt
+write file2.txt Text from Bob in file2
+read file2.txt
 logout
-login admin ya84*_o
-write file2.txt Text from Admin in file2
+login tom geek_247
+xcacls file1.txt /D alice
+logout
+end

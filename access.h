@@ -32,9 +32,11 @@ void logout();
 bool createUser(string username, string password, int count);
 bool createGroup(string groupname, int count);
 bool isAdmin(string username);
+bool isOwner(string filename, string username);
 bool addToGroup(string username, string groupname, int count);
 bool groupExist(string groupname);
 bool userExist(string username);
+bool fileExist(string filename);
 void createFile(string filename);
 vector<string> getUserGroup(string username);
 
@@ -43,3 +45,5 @@ void setPermissions(string filename);
 void writeFile(string filename, string text);
 void readFile(string filename);
 string getPermissions(string filename, string username);
+void editPermissions(string filename, string newPermissions, string uORg);
+void replacePermissions(string filename, string newPermissions, string uORg);

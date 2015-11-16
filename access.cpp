@@ -95,12 +95,24 @@ int main(int argc, char const *argv[]) {
 			text.erase(0,1);
 			writeFile(arg2, text);
 		}
+		if (arg1 == "xcacls") {
+			string filename, uORg, newPermissions;
+			in >> filename >> arg2;
+			if (arg2 == "/E") {
+				in >> uORg >> newPermissions;
+				//cout << ">> " << filename << " " << arg2 << " " << uORg << " " << newPermissions << endl;
+				editPermissions(filename, newPermissions, uORg);
+			} else {
+				in >> uORg;
+				cout << ">> " << filename << " " << arg2 << " " << uORg << endl;
+				// replacePermissions
+
+			}
+		}
 
 	}
 
 	cout << "_________TEST-OUTPUT__STRUCT_______" << endl;
-
-
 	for (size_t i = 0; i < numberOfUsers; i++) {
 		cout << listUsers[i].username << " ";
 		for (size_t j = 0; j < listUsers[i].groups.size(); j++) {
@@ -108,8 +120,6 @@ int main(int argc, char const *argv[]) {
 		}
 		cout << endl;
 	}
-
-
 
 	//vector<string> testGroups = getUserGroup("admin",count);
 
@@ -127,14 +137,13 @@ int main(int argc, char const *argv[]) {
 
 		cout << endl;
 	}
-	cout << "_________TEST-OUTPUT_______________" << endl;
 
+	cout << "_________TEST-OUTPUT_______________" << endl;
 	for (size_t i = 0; i < numberOfUsers; i++) {
 		cout << listUsers[i].username << endl;
 	}
 
 	cout << "_________TEST-OUTPUT__MAP__________" << endl;
-
 	for(auto ii=permissions.begin(); ii!=permissions.end(); ++ii){
 		cout << (*ii).first << ": ";
 		vector <string> inVect = (*ii).second;
@@ -147,10 +156,32 @@ int main(int argc, char const *argv[]) {
 	return 0;
 }
 
+void editPermissions(string filename, string newPermissions, string uORg) {
+	if (isLoggedIn) {
+		if (fileExist(filename)) {
+			if (isOwner(filename,whosLoggedIn) || isAdmin(whosLoggedIn)) {
+				permissions[filename].push_back(newPermissions);
+			}
+			//cout << ">> isAdmin(" << whosLoggedIn << "): " << (isAdmin(whosLoggedIn)?"true":"false") << endl;
+			//cout << ">> isOwner(" << whosLoggedIn << "): " << (isOwner(filename, whosLoggedIn)?"true":"false") << endl;
+		} else {
+			cout << "Error: File " << filename << " does not exist" << endl;
+		}
+	} else {
+		cout << "Error: Please login to change permissions file" << endl;
+	}
+}
+void replacePermissions(string filename, string newPermissions, string uORg) {
+
+}
+
+bool fileExist(string filename) {
+	return (permissions.find(filename) != permissions.end())?true:false;
+}
+
 void createFile(string filename) {
 	if (isLoggedIn) {
 		fstream myFile;
-		bool fileExists = false;
 		myFile.open(filename, ios_base::out | ios_base::in);  // will not create file
 
 		if (myFile.is_open()) {
@@ -158,11 +189,7 @@ void createFile(string filename) {
 		}
 		myFile.close();
 
-		if(permissions.find(filename) != permissions.end()) {
-	    	fileExists = true; //run through the map to see if the file exists
-		}
-
-		if (!fileExists) {
+		if (!fileExist(filename)) {
 			myFile.open(filename, ios_base::app);
 			myFile.close();
 			cout << "File " << filename << " with owner " << whosLoggedIn << " and default permissions created" << endl;
@@ -231,20 +258,34 @@ string getPermissions(string filename, string username) {
 			if (permissions[filename][i] == (group[j]+":D")) {
 				highestGroupPermissionLevel = "D";
 			}
+			if (permissions[filename][i] == (group[j]+":RW")) {
+				highestGroupPermissionLevel = "RW";
+			}
 		}
 	}
 
 	return (highestUserPermissionLevel == "")?highestGroupPermissionLevel:highestUserPermissionLevel;
 }
 
+bool canWrite(string userPermissions) {
+	if (userPermissions.find("R") != std::string::npos) {
+    	return true;
+	} else if (userPermissions.find("F") != std::string::npos) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void writeFile(string filename, string text) {
 	string userPermissions = getPermissions(filename, whosLoggedIn);
 	fstream myFile;
-	if (userPermissions == "F" || userPermissions == "W") {
+	//cout << ">> permissions for " << whosLoggedIn << " is " << userPermissions << " and canWrite: " <<  (canWrite(userPermissions)?"true":"false") << endl;
+	if (canWrite(userPermissions)) {
 		myFile.open(filename, std::ios_base::app);
 		myFile << text << endl;
 		myFile.close();
-		cout << "User " << whosLoggedIn << " wrote to " << filename << ": Text from Alice in file2" << endl;
+		cout << "User " << whosLoggedIn << " wrote to " << filename << ": " << text << endl;
 	}
 
 }
@@ -316,6 +357,10 @@ bool isAdmin(string username) {
 	} else {
 		return false;
 	}
+}
+
+bool isOwner(string filename, string username) {
+	return (permissions[filename][0] == username)?true:false;
 }
 
 bool createUser(string username, string password, int numberOfUsers) {
