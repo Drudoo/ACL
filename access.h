@@ -50,3 +50,4 @@ bool canRead(string userPermissions);
 string getPermissions(string filename, string username);
 void editPermissions(string filename, string newPermissions, string uORg);
 void replacePermissions(string filename, string newPermissions, string uORg);
+void log(string text);
