@@ -4,6 +4,7 @@
 #include <fstream>
 #include <regex>
 #include <sstream>
+#include <map>
 using namespace std;
 
 struct Users {
@@ -36,3 +37,8 @@ bool groupExist(string groupname);
 bool userExist(string username);
 void createFile(string filename);
 vector<string> getUserGroup(string username, int count);
+
+map<string, vector<string> > permissions;
+void setPermissions(string filename);
+void writeFile(string filename, string text);
+void readFile(string filename);

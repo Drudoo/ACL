@@ -15,3 +15,8 @@ create file1.txt
 logout
 login bob SHHHsecret
 create file2.txt
+logout
+login admin ya84*_o
+create file2.txt
+logout
+create file3.txt

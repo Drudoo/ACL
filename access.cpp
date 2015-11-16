@@ -1,13 +1,21 @@
 #include "access.h"
 #include <typeinfo> //just for debug
-vector< vector<string> > groups(10, vector<string>(1)); //Only supports 10 user groups
+vector< vector<string> > groups(10, vector<string>(1)); //Only supports 10 user groups. Variable is global, so we don't have to pass it all the time.
 
 
 int main(int argc, char const *argv[]) {
 
-	vector<string> instructions;
-	whosLoggedIn = "admin";
-	if (argc < 2) {
+
+	//JUST FOR DEBUG. PLEASE DELETE!
+
+	permissions["Filename "].push_back("Owner: ");
+	permissions["Filename "].push_back("Permissions: ");
+
+	//-------------------------------!!!!
+
+	vector<string> instructions; //for loading instructions from the file.
+	whosLoggedIn = "admin"; //admin is logged in from the start to create the default groups and admin user.
+	if (argc < 2) { //if we don't have a filename, give an error and exit.
 		cout << "Error: Please specify a filename.\nUse the format './access filename'" << endl;
 		return 1;
 	} else {
@@ -83,7 +91,7 @@ int main(int argc, char const *argv[]) {
 
 	}
 
-	cout << "_________ TEST OUTPUT __ STRUCT _______" << endl;
+	cout << "_________TEST-OUTPUT__STRUCT_______" << endl;
 
 
 	for (size_t i = 0; i < numberOfUsers; i++) {
@@ -98,7 +106,7 @@ int main(int argc, char const *argv[]) {
 
 	//vector<string> testGroups = getUserGroup("admin",count);
 
-	cout << "_________ TEST OUTPUT __ VECTOR_______" << endl;
+	cout << "_________TEST-OUTPUT__VECTOR_______" << endl;
 	for (size_t i = 0; i < groupCount; i++) {
 		if (groups[i].size() < groups[i+1].size()) {
 			for (size_t j = 0; j < groups[i].size(); j++) {
@@ -112,31 +120,74 @@ int main(int argc, char const *argv[]) {
 
 		cout << endl;
 	}
-	cout << "_________ TEST OUTPUT _________" << endl;
+	cout << "_________TEST-OUTPUT_______________" << endl;
 
 	for (size_t i = 0; i < numberOfUsers; i++) {
 		cout << listUsers[i].username << endl;
+	}
+
+	cout << "_________TEST-OUTPUT__MAP__________" << endl;
+
+	for(auto ii=permissions.begin(); ii!=permissions.end(); ++ii){
+		cout << (*ii).first << ": ";
+		vector <string> inVect = (*ii).second;
+		for (unsigned j=0; j<inVect.size(); j++){
+			cout << inVect[j] << " ";
+		}
+		cout << endl;
 	}
 
 	return 0;
 }
 
 void createFile(string filename) {
-	fstream myFile;
-	myFile.open(filename, ios_base::out | ios_base::in);  // will not create file
+	if (isLoggedIn) {
+		fstream myFile;
+		bool fileExists = false;
+		myFile.open(filename, ios_base::out | ios_base::in);  // will not create file
 
-	if (myFile.is_open()) {
-		remove(filename.c_str());
-	}
-	myFile.close();
-	myFile.open(filename, ios_base::app);
-	myFile.close();
-	cout << "File " << filename << " with owner " << whosLoggedIn << " and default permissions created" << endl;
-	if (isAdmin(whosLoggedIn)) {
-		//permissions: Users group is assigned Read access as well.
+		if (myFile.is_open()) {
+			remove(filename.c_str());
+		}
+		myFile.close();
+
+		if(permissions.find(filename) != permissions.end()) {
+	    	fileExists = true; //run through the map to see if the file exists
+		}
+
+		if (!fileExists) {
+			myFile.open(filename, ios_base::app);
+			myFile.close();
+			cout << "File " << filename << " with owner " << whosLoggedIn << " and default permissions created" << endl;
+			setPermissions(filename);
+		} else {
+			cout << "Error: file " << filename << " already exists" << endl;
+		}
 	} else {
-		// The file owner / creator and the Administrators group : Full control.
+		cout << "Error: Please login to create file" << endl;
 	}
+
+}
+
+void setPermissions(string filename) {
+	if (isAdmin(whosLoggedIn)) {
+		permissions[filename].push_back(whosLoggedIn); // filename.txt username
+		permissions[filename].push_back(whosLoggedIn+":F"); // adds user rights
+		permissions[filename].push_back("Administrators:F"); //adds admin rights
+		permissions[filename].push_back("Users:R"); //adds user read rights
+
+	} else {
+		permissions[filename].push_back(whosLoggedIn); // filename.txt username
+		permissions[filename].push_back(whosLoggedIn+":F"); // adds user rights
+		permissions[filename].push_back("Administrators:F"); //adds admin rights
+	}
+}
+
+void writeFile(string filename, string text) {
+
+}
+void readFile(string filename) {
+
 }
 
 bool addToGroup(string username, string groupname, int numberOfUsers) {
