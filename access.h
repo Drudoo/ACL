@@ -42,6 +42,7 @@ void createFile(string filename);
 vector<string> getUserGroup(string username);
 
 map<string, vector<string> > permissions;
+map<string, vector<string> > usergroups;
 void setPermissions(string filename);
 void writeFile(string filename, string text);
 void readFile(string filename);

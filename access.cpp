@@ -1,5 +1,5 @@
 #include "access.h"
-#include <typeinfo> //just for debug
+//#include <typeinfo> //just for debug
 vector< vector<string> > groups(10, vector<string>(1)); //Only supports 10 user groups. Variable is global, so we don't have to pass it all the time.
 
 
@@ -124,8 +124,31 @@ int main(int argc, char const *argv[]) {
 			readFile(filename);
 		}
 
+		if (arg1 == "end") {
+			fstream myOutput;
+			myOutput.open("groups.txt", ios_base::out | ios_base::in);  // will not create file
+
+			if (myOutput.is_open()) {
+				remove("groups.txt");
+			}
+			myOutput.close();
+			myOutput.open("groups.txt", ios_base::app);
+
+			for(map<string, vector<string> >::iterator it = usergroups.begin(); it != usergroups.end(); it++) {
+				myOutput << it->first << ": ";
+				vector<string> itVector = it->second;
+				for (size_t j = 0; j < itVector.size(); j++) {
+					myOutput << itVector[j] << " ";
+				}
+				myOutput << endl;
+			}
+			myOutput.close();
+		}
+
 	}
 
+
+/*
 	cout << "_________TEST-OUTPUT__STRUCT_______" << endl;
 	for (size_t i = 0; i < numberOfUsers; i++) {
 		cout << listUsers[i].username << " ";
@@ -158,11 +181,20 @@ int main(int argc, char const *argv[]) {
 	}
 
 	cout << "_________TEST-OUTPUT__MAP__________" << endl;
-	for(auto ii=permissions.begin(); ii!=permissions.end(); ++ii){
-		cout << (*ii).first << ": ";
-		vector <string> inVect = (*ii).second;
-		for (unsigned j=0; j<inVect.size(); j++){
-			cout << inVect[j] << " ";
+	for(map<string, vector<string> >::iterator it = permissions.begin(); it != permissions.end(); it++) {
+		cout << it->first << ": ";
+		vector<string> itVector = it->second;
+		for (size_t j = 0; j < itVector.size(); j++) {
+			cout << itVector[j] << " ";
+		}
+		cout << endl;
+	}
+	cout << "_________TEST-OUTPUT__MAP__________" << endl;
+	for(map<string, vector<string> >::iterator it = usergroups.begin(); it != usergroups.end(); it++) {
+		cout << it->first << ": ";
+		vector<string> itVector = it->second;
+		for (size_t j = 0; j < itVector.size(); j++) {
+			cout << itVector[j] << " ";
 		}
 		cout << endl;
 	}
@@ -180,7 +212,7 @@ int main(int argc, char const *argv[]) {
 		cout << line << endl;
 	}
 	myAccounts.close();
-
+*/
 
 
 	return 0;
@@ -385,6 +417,7 @@ bool addToGroup(string username, string groupname, int numberOfUsers) {
 				if (groupname == groups[k][0]) {
 					groups[k].push_back(u);
 					listUsers[temp].groups.push_back(g);
+					usergroups[groupname].push_back(username);
 					return true;
 				}
 			}
@@ -409,6 +442,7 @@ bool createGroup(string groupname, int numberOfUsers) {
 			}
 			if (!groupExists) {
 				groups[groupCount][0] = g;
+				usergroups[g];
 				log("Group " + g + " created");
 			} else {
 				log("Error: Group " + g + " already exists");
@@ -420,6 +454,7 @@ bool createGroup(string groupname, int numberOfUsers) {
 		}
 	} else {
 		groups[groupCount][0] = g;
+		usergroups[g];
 		log("Group " + g + " created");
 	}
 	return true;
@@ -445,8 +480,11 @@ bool createUser(string username, string password, int numberOfUsers) {
 	if (isAdmin(whosLoggedIn)) {
 		if (!(find(groups[1].begin(), groups[1].end(), username) != groups[1].end())) {
 			if (!checkUsername(username)) {
-				groups[1].push_back(username);
-				listUsers[numberOfUsers].groups.push_back("Users");
+				if(username!="admin") { //admin should not be part of group Users
+					groups[1].push_back(username);
+					listUsers[numberOfUsers].groups.push_back("Users");
+					usergroups["Users"].push_back(username);
+				}
 				listUsers[numberOfUsers].username = username;
 				log("User " + username + " created");
 				myAccounts.open("accounts.txt", std::ios_base::app);
@@ -566,12 +604,4 @@ void log(string text) {
 	myAudit.open("audit.txt", ios_base::app);
 	myAudit << text << endl;
 	myAudit.close();
-}
-
-void netUser(string username, string password) {
-
-}
-
-void netGroup(string username, string password) {
-
 }
