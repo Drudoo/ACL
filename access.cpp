@@ -107,8 +107,13 @@ int main(int argc, char const *argv[]) {
 			in >> filename >> arg2;
 			if (arg2 == "/E") {
 				in >> uORg >> newPermissions;
-				//cout << ">> " << filename << " " << arg2 << " " << uORg << " " << newPermissions << endl;
-				editPermissions(filename, newPermissions, uORg);
+				if (uORg == "/P") {
+					replacePermissions(filename, newPermissions, uORg);
+				} else if (uORg == "/D") {
+					denyPermissions(filename, newPermissions);
+				} else {
+					editPermissions(filename, newPermissions, uORg);
+				}
 			} else {
 				in >> uORg;
 				//cout << ">> " << filename << " " << arg2 << " " << uORg << endl;
@@ -122,6 +127,12 @@ int main(int argc, char const *argv[]) {
 			string filename;
 			in >> filename;
 			readFile(filename);
+		}
+
+		if (arg1 == "execute") {
+			string filename;
+			in >> filename;
+			executeFile(filename);
 		}
 
 		if (arg1 == "end") {
@@ -258,16 +269,47 @@ void editPermissions(string filename, string newPermissions, string uORg) {
 	}
 }
 
+void denyPermissions(string filename, string newPermissions) {
+	if (isLoggedIn) {
+		if (fileExist(filename)) {
+			if (isOwner(filename, whosLoggedIn) || isAdmin(whosLoggedIn)) {
+				permissions[filename].push_back(newPermissions+":D");
+				log("ACL changed for " + filename +": user " + newPermissions +" denied access");
+			} else {
+				log("Error with xcacls: Only file owner or member of Administrators group may run command");
+			}
+		} else {
+			log("Error: File " + filename + " does not exist");
+		}
+	} else {
+		log("Error: Please login to change permissions file");
+	}
+}
+
 
 void replacePermissions(string filename, string newPermissions, string uORg) {
 	if (isLoggedIn) {
 		if (fileExist(filename)) {
 			if (isOwner(filename,whosLoggedIn) || isAdmin(whosLoggedIn)) {
+				string tempUsername = newPermissions;
+				tempUsername.resize(whosLoggedIn.length());
+				for (size_t i = 1; i < permissions[filename].size(); i++) {
 
+					if (permissions[filename][i].substr(0,whosLoggedIn.length()) == tempUsername) {
+						permissions[filename][i] = newPermissions; //only works for the users that's logged in
+						log("User " + tempUsername + " access to file " + filename + " changed to " + newPermissions.substr(whosLoggedIn.length()+1) + " by " + whosLoggedIn);
+					}
+				}
+
+				//replace (permissions[filename].begin(), permissions[filename].end(), 20, 99);
 			} else {
 				log("Error with xcacls: Only file owner or member of Administrators group may run command");
 			}
+		} else {
+			log("Error: File " + filename + " does not exist");
 		}
+	} else {
+		log("Error: Please login to change permissions file");
 	}
 }
 
@@ -319,25 +361,18 @@ string getPermissions(string filename, string username) {
 	group = getUserGroup(username);
 	string highestUserPermissionLevel = "";
 	string highestGroupPermissionLevel = "";
-
-	for (size_t i = 0; i < permissions[filename].size(); i++) {
-		if (permissions[filename][i] == (whosLoggedIn+":F")) {
-			highestUserPermissionLevel = "F";
-		}
-		if (permissions[filename][i] == (whosLoggedIn+":R")) {
-			highestUserPermissionLevel = "R";
-		}
-		if (permissions[filename][i] == (whosLoggedIn+":X")) {
-			highestUserPermissionLevel = "X";
-		}
-		if (permissions[filename][i] == (whosLoggedIn+":W")) {
-			highestUserPermissionLevel = "W";
-		}
-		if (permissions[filename][i] == (whosLoggedIn+":D")) {
-			highestUserPermissionLevel = "D";
+	string tempUsername;
+	for (size_t i = 1; i < permissions[filename].size(); i++) {
+		tempUsername  = permissions[filename][i];
+		tempUsername.resize(whosLoggedIn.length()) ;
+		if (tempUsername == whosLoggedIn) {
+			//cout << "tempUsername: " << tempUsername << " whosLoggedIn: " << whosLoggedIn << endl;
+			//cout << "permissions: " << permissions[filename][i] <<endl;
+			highestUserPermissionLevel = permissions[filename][i].substr(tempUsername.length()+1);
 		}
 	}
 
+	// make as above
 	for (size_t i = 0; i < permissions[filename].size(); i++) {
 		for (size_t j = 0; j < group.size(); j++) {
 			if (permissions[filename][i] == (group[j]+":F")) {
@@ -361,7 +396,9 @@ string getPermissions(string filename, string username) {
 		}
 	}
 
-	return (highestUserPermissionLevel == "")?highestGroupPermissionLevel:highestUserPermissionLevel;
+	cout << ">> Permissions for " << username << ": " << highestUserPermissionLevel+highestGroupPermissionLevel<< endl;
+
+	return highestUserPermissionLevel+highestGroupPermissionLevel;
 }
 
 bool canWrite(string userPermissions) {
@@ -412,11 +449,39 @@ void readFile(string filename) {
 	} else {
 		log("Error: no user logged in");
 	}
+}
 
+void executeFile(string filename) {
+	string userPermissions = getPermissions(filename,whosLoggedIn);
+	//cout << ">> " << userPermissions << endl;
+ 	if (isLoggedIn) {
+ 		if (fileExist(filename)) {
+			cout << ">> " << userPermissions << endl;
+ 			if (canExecute(userPermissions)) {
+ 				log("File " + filename + " executed by " + whosLoggedIn);
+ 			} else {
+				log("User " + whosLoggedIn + " denied execute access to " + filename);
+			}
+ 		} else {
+			log("Error: File " + filename + " does not exist");
+		}
+ 	} else {
+		log("Error: no user logged in");
+	}
 }
 
 bool canRead(string userPermissions) {
 	if (userPermissions.find("R") != std::string::npos) {
+    	return true;
+	} else if (userPermissions.find("F") != std::string::npos) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool canExecute(string userPermissions) {
+	if (userPermissions.find("X") != std::string::npos) {
     	return true;
 	} else if (userPermissions.find("F") != std::string::npos) {
 		return true;
