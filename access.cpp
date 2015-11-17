@@ -181,7 +181,6 @@ int main(int argc, char const *argv[]) {
 
 	}
 
-
 /*
 	cout << "_________TEST-OUTPUT__STRUCT_______" << endl;
 	for (size_t i = 0; i < numberOfUsers; i++) {
@@ -274,7 +273,13 @@ void denyPermissions(string filename, string newPermissions) {
 		if (fileExist(filename)) {
 			if (isOwner(filename, whosLoggedIn) || isAdmin(whosLoggedIn)) {
 				permissions[filename].push_back(newPermissions+":D");
-				log("ACL changed for " + filename +": user " + newPermissions +" denied access");
+				string temp = "user";
+				for (size_t j = 0; j < groupCount; j++) {
+					if (!strncasecmp(groups[j][0],newPermissions)) {
+						temp="group";
+					}
+				}
+				log("ACL changed for " + filename +": " + temp + " " + newPermissions +" denied access");
 			} else {
 				log("Error with xcacls: Only file owner or member of Administrators group may run command");
 			}
@@ -364,39 +369,38 @@ string getPermissions(string filename, string username) {
 	string tempUsername;
 	for (size_t i = 1; i < permissions[filename].size(); i++) {
 		tempUsername  = permissions[filename][i];
-		tempUsername.resize(whosLoggedIn.length()) ;
+		tempUsername.resize(whosLoggedIn.length());
 		if (tempUsername == whosLoggedIn) {
+
+
+			// some permissions are wrong here.
+
+
 			//cout << "tempUsername: " << tempUsername << " whosLoggedIn: " << whosLoggedIn << endl;
 			//cout << "permissions: " << permissions[filename][i] <<endl;
 			highestUserPermissionLevel = permissions[filename][i].substr(tempUsername.length()+1);
 		}
 	}
+	//cout << ">> Permissions for " << username << ": " << highestUserPermissionLevel+highestGroupPermissionLevel<< endl;
 
+	string s1,s2;
 	// make as above
-	for (size_t i = 0; i < permissions[filename].size(); i++) {
+	for (size_t i = 1; i < permissions[filename].size(); i++) {
 		for (size_t j = 0; j < group.size(); j++) {
-			if (permissions[filename][i] == (group[j]+":F")) {
-				highestGroupPermissionLevel = "F";
-			}
-			if (permissions[filename][i] == (group[j]+":R")) {
-				highestGroupPermissionLevel = "R";
-			}
-			if (permissions[filename][i] == (group[j]+":X")) {
-				highestGroupPermissionLevel = "X";
-			}
-			if (permissions[filename][i] == (group[j]+":W")) {
-				highestGroupPermissionLevel = "W";
-			}
-			if (permissions[filename][i] == (group[j]+":D")) {
-				highestGroupPermissionLevel = "D";
-			}
-			if (permissions[filename][i] == (group[j]+":RW")) {
-				highestGroupPermissionLevel = "RW";
+
+			//tempUsername = permissions[filename][i];
+			//tempUsername.resize(whosLoggedIn.length());
+			size_t pos = permissions[filename][i].find(":");
+			s1 = permissions[filename][i].substr(0,pos);
+			s2 = group[j];
+			if (strncasecmp(s1,s2)==0) {
+				cout << "-->> " << s1 << " " << s2 << endl;
+				highestGroupPermissionLevel += permissions[filename][i].substr(s1.length()+1);
 			}
 		}
 	}
 
-	cout << ">> Permissions for " << username << ": " << highestUserPermissionLevel+highestGroupPermissionLevel<< endl;
+	cout << ">> Permissions for " << username << ": " << highestUserPermissionLevel << " " << highestGroupPermissionLevel<< endl;
 
 	return highestUserPermissionLevel+highestGroupPermissionLevel;
 }
@@ -456,7 +460,7 @@ void executeFile(string filename) {
 	//cout << ">> " << userPermissions << endl;
  	if (isLoggedIn) {
  		if (fileExist(filename)) {
-			cout << ">> " << userPermissions << endl;
+			//cout << ">> " << userPermissions << endl;
  			if (canExecute(userPermissions)) {
  				log("File " + filename + " executed by " + whosLoggedIn);
  			} else {
@@ -567,7 +571,7 @@ bool createUser(string username, string password, int numberOfUsers) {
 
 	if (isAdmin(whosLoggedIn)) {
 		if (!(find(groups[1].begin(), groups[1].end(), username) != groups[1].end())) {
-			if (!checkUsername(username)) {
+			if (!checkCommand(username)) {
 				if(username!="admin") { //admin should not be part of group Users
 					groups[1].push_back(username);
 					listUsers[numberOfUsers].groups.push_back("Users");
@@ -597,23 +601,23 @@ bool createUser(string username, string password, int numberOfUsers) {
 
 int checkSetup(vector<string> instructions) {
 	if (instructions[0].substr(0, 14) != "net user admin") {
-		cout << "Error: First line is not 'net user admin'\nExiting...\n";
+		log("Error: First line is not 'net user admin'\nExiting...\n");
 		return 1;
 	} else if (instructions[1].substr(0, 24) != "net group Administrators") {
-		cout << "Error: Second line is not 'net group Administrators'\nExiting...\n";
+		log("Error: Second line is not 'net group Administrators'\nExiting...\n");
 		return 2;
 	} else if (instructions[2].substr(0, 24) != "net group Administrators") {
-		cout << "Error: Third line is not 'net group Administrators'\nExiting...\n";
+		log("Error: Third line is not 'net group Administrators'\nExiting...\n");
 		return 3;
 	} else if (instructions[3].substr(0, 15)  != "net group Users") {
-		cout << "Error: Fourth line is not 'net group Users'\nExiting...\n";
+		log("Error: Fourth line is not 'net group Users'\nExiting...\n");
 		return 4;
 	} else {
 		return 0;
 	}
 }
 
-int checkUsername(string username) {
+int checkCommand(string username) {
 	smatch m;
   	regex e ("\\s|\\/|\v|\\:");
 
@@ -621,7 +625,7 @@ int checkUsername(string username) {
 		log("Error: Username cannot be more than 30 characters");
 		return 1;
 	} else if (regex_search (username,m,e)) {
-		log("Error: Username cannot contain forward slash ('/'), colon (':'), carriage return, form feed, horizontal tab, new line, vertical tab, and space.");
+		log("Error: Username, group name, or filename  cannot contain forward slash ('/'), colon (':'), carriage return, form feed, horizontal tab, new line, vertical tab, and space.");
 		return 1;
 	} else {
 		return 0;
@@ -692,4 +696,14 @@ void log(string text) {
 	myAudit.open("audit.txt", ios_base::app);
 	myAudit << text << endl;
 	myAudit.close();
+}
+
+bool strncasecmp(string s1, string s2) {
+	for (size_t i = 0; i < s1.length(); i++) {
+		s1[i] = tolower(s1[i]);
+	}
+	for (size_t i = 0; i < s2.length(); i++) {
+		s2[i] = tolower(s2[i]);
+	}
+	return strcmp(s1.c_str(),s2.c_str());
 }

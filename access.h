@@ -26,7 +26,7 @@ int groupCount = 0;
 int numberOfUsers = 0;
 bool groupExists = false;
 int checkSetup(vector<string> instructions);
-int checkUsername(string username);
+int checkCommand(string username);
 int checkPassword(string password);
 void login(string username, string password);
 void logout();
@@ -39,6 +39,7 @@ bool groupExist(string groupname);
 bool userExist(string username);
 bool fileExist(string filename);
 void createFile(string filename);
+bool strncasecmp(string s1, string s2);
 vector<string> getUserGroup(string username);
 
 map<string, vector<string> > permissions;
