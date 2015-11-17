@@ -46,6 +46,10 @@ bool contains(string s1, string s2);
 
 map<string, vector<string> > permissions;
 map<string, vector<string> > usergroups;
+map<string, string> UAC;
+void setUAC(string username, string permissions);
+string getUAC(string username);
+string getUACString(string username);
 void setPermissions(string filename);
 void writeFile(string filename, string text);
 void readFile(string filename);

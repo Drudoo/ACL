@@ -135,6 +135,12 @@ int main(int argc, char const *argv[]) {
 			executeFile(filename);
 		}
 
+		if (arg1 == "uac") {
+			in >> arg2;
+			setUAC(whosLoggedIn,arg2);
+			cout << ">> " << getUAC(whosLoggedIn) << ":"<< getUACString(whosLoggedIn) << endl;
+		}
+
 		if (arg1 == "end") {
 			fstream myOutput;
 			myOutput.open("groups.txt", ios_base::out | ios_base::in);  // will not create file
@@ -248,6 +254,27 @@ int main(int argc, char const *argv[]) {
 */
 
 	return 0;
+}
+
+void setUAC(string username, string permissions) {
+	if (isLoggedIn) {
+		UAC[username] = permissions;
+		log(getUACString(username));
+	}
+}
+
+string getUAC(string username) {
+	return UAC[username];
+}
+
+string getUACString(string username) {
+	if (getUAC(username) == "Always") {
+		return "Always notify";
+	} else if (getUAC(username) == "Change") {
+		return "Notify only on change";
+	} else {
+		return "Never notify";
+	}
 }
 
 void editPermissions(string filename, string newPermissions, string uORg) {
@@ -589,14 +616,15 @@ bool createUser(string username, string password, int numberOfUsers) {
 					usergroups["Users"].push_back(username);
 				}
 				listUsers[numberOfUsers].username = username;
+				UAC[username] = "Change";
 				log("User " + username + " created");
 				myAccounts.open("accounts.txt", std::ios_base::app);
-				myAccounts << username << " " << password << endl;
+				myAccounts << username << " " << password << " " << getUACString(username) << endl;
 				myAccounts.close();
 				isFirstRun = false;
 
 				// DEBUG:
-				log("Notify only on change");
+				log(getUACString(username));
 				// -------
 			}
 		} else {
