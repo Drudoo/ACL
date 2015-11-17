@@ -42,6 +42,8 @@ void createFile(string filename);
 bool strncasecmp(string s1, string s2);
 vector<string> getUserGroup(string username);
 
+bool contains(string s1, string s2);
+
 map<string, vector<string> > permissions;
 map<string, vector<string> > usergroups;
 void setPermissions(string filename);

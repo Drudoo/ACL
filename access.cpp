@@ -247,7 +247,6 @@ int main(int argc, char const *argv[]) {
 	myAccounts.close();
 */
 
-
 	return 0;
 }
 
@@ -394,15 +393,27 @@ string getPermissions(string filename, string username) {
 			s1 = permissions[filename][i].substr(0,pos);
 			s2 = group[j];
 			if (strncasecmp(s1,s2)==0) {
-				cout << "-->> " << s1 << " " << s2 << endl;
+				//cout << "-->> " << s1 << " " << s2 << endl;
 				highestGroupPermissionLevel += permissions[filename][i].substr(s1.length()+1);
 			}
 		}
 	}
 
-	cout << ">> Permissions for " << username << ": " << highestUserPermissionLevel << " " << highestGroupPermissionLevel<< endl;
+	//cout << ">> Permissions for " << username << ":" << highestUserPermissionLevel << ":" << highestGroupPermissionLevel<< endl;
+	if (contains(highestUserPermissionLevel,"D") || contains(highestGroupPermissionLevel,"D")) {
+		return "D";
+	} else {
+		return highestUserPermissionLevel+highestGroupPermissionLevel;
+	}
 
-	return highestUserPermissionLevel+highestGroupPermissionLevel;
+}
+
+bool contains(string s1, string s2) {
+	if (s1.find(s2) != std::string::npos) {
+    	return true;
+	} else {
+		return false;
+	}
 }
 
 bool canWrite(string userPermissions) {
