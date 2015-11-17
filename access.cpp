@@ -8,8 +8,8 @@ int main(int argc, char const *argv[]) {
 
 	//JUST FOR DEBUG. PLEASE DELETE!
 
-	permissions["Filename "].push_back("Owner");
-	permissions["Filename "].push_back("Permissions");
+	//permissions["Filename "].push_back("Owner");
+	//permissions["Filename "].push_back("Permissions");
 
 	//-------------------------------!!!!
 
@@ -140,6 +140,29 @@ int main(int argc, char const *argv[]) {
 				for (size_t j = 0; j < itVector.size(); j++) {
 					myOutput << itVector[j] << " ";
 				}
+				myOutput << endl;
+			}
+			myOutput.close();
+
+			myOutput.open("files.txt", ios_base::out | ios_base::in);
+			if (myOutput.is_open()) {
+				remove("files.txt");
+			}
+			myOutput.close();
+			myOutput.open("files.txt", ios_base::app);
+			for(map<string, vector<string> >::iterator it = permissions.begin(); it != permissions.end(); it++) {
+				myOutput << it->first << " ";
+				vector<string> itVector = it->second;
+				for (size_t j = 0; j < itVector.size(); j++) {
+					myOutput << itVector[j];
+					if (j==0) {
+						myOutput << " (";
+					}
+					if (j>0&&j<itVector.size()-1) {
+						myOutput << ",";
+					}
+				}
+				myOutput << ")";
 				myOutput << endl;
 			}
 			myOutput.close();
