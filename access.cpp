@@ -154,35 +154,22 @@ int main(int argc, char const *argv[]) {
 				programRead(filename);
 			}
 			if (arg2 == "write") {
-				string filename;
-				in >> filename;
 				string text;
 				getline(in, text);
 				text.erase(0,1);
-				startThread1 = true;
-				threadText = text;
-				threadFilename = filename;
+				//cout << ">> UAC: " << getUAC(whosLoggedIn) << endl;
+				//cout << "..." << arg1 << ":" <<  arg2 << ":" <<  filename << ":" << text <<"..." << endl;
+				if (getUAC(whosLoggedIn) == "Never") {
+					programWrite(filename,text);
+				} else {
+					string tempAnswer = instructions[i+1];
+					tempAnswer.erase( std::remove(tempAnswer.begin(), tempAnswer.end(), '\r'), tempAnswer.end() );
+					if (canContinue(tempAnswer)) {
+						programWrite(filename,text);
+					}
+				}
+
 			}
-		}
-
-		if (arg1=="yes") {
-			threadAnswer = arg1;
-			startThread2 = true;
-		}
-
-		if (startThread1&&startThread2) {
-			cout << ">> Starting some threads...\n";
-			thread first(programWrite,threadFilename, threadText);
-			cout << ">> Thread 1 was started...\n";
-			thread second(canContinue,threadAnswer);
-			cout << ">> Thread 2 was started...\n";
-
-			first.join();
-			second.join();
-			cout << ">> Threads were joined...\n";
-			startThread1 = false;
-			startThread2 = false;
-			canContinueExecuting = false;
 		}
 
 		if (arg1 == "end") {
@@ -321,12 +308,9 @@ int main(int argc, char const *argv[]) {
 }
 
 bool canContinue(string answer) {
-	cout << "Thread 2 should end...\n";
 	if (answer == "yes") {
-		canContinueExecuting = true;
 		return true;
 	} else {
-		canContinueExecuting = false;
 		return false;
 	}
 }
@@ -363,13 +347,17 @@ void programRead(string filename) {
 }
 
 void programWrite(string filename, string text) {
-	//cout << ">> well here we are: " << canContinueExecuting << "\n";
-
-	//cout << ">> well now we continue: " << canContinueExecuting << "\n";
-	if (canContinueExecuting) {
-		cout << ">> WE ARE WRITING TO FILE!" << endl;
+	fstream myFile;
+	if (isLoggedIn) {
+		if (canWrite(getPermissions(filename,whosLoggedIn))) {
+			myFile.open(filename, std::ios_base::app);
+			myFile << text << endl;
+			myFile.close();
+			log("program wrote to " + filename + ": " + text);
+		} else {
+			log("program denied write access to " + filename);
+		}
 	}
-	cout << "Thread 1 should end...\n";
 }
 
 void setUAC(string username, string permissions) {

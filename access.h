@@ -5,9 +5,7 @@
 #include <regex>
 #include <sstream>
 #include <map>
-#include <thread>
-#include <mutex>              // std::mutex, std::unique_lock
-#include <condition_variable>
+
 using namespace std;
 
 struct Users {
@@ -43,17 +41,6 @@ bool userExist(string username);
 bool fileExist(string filename);
 void createFile(string filename);
 bool strncasecmp(string s1, string s2);
-
-bool canContinueExecuting;
-bool hasAnswered = false;
-mutex mtx;
-condition_variable cv;
-
-bool startThread1 = false;
-bool startThread2 = false;
-string threadFilename;
-string threadAnswer;
-string threadText;
 
 vector<string> getUserGroup(string username);
 
