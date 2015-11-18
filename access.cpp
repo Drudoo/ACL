@@ -138,7 +138,51 @@ int main(int argc, char const *argv[]) {
 		if (arg1 == "uac") {
 			in >> arg2;
 			setUAC(whosLoggedIn,arg2);
-			cout << ">> " << getUAC(whosLoggedIn) << ":"<< getUACString(whosLoggedIn) << endl;
+			//cout << ">> " << getUAC(whosLoggedIn) << ":"<< getUACString(whosLoggedIn) << endl;
+		}
+
+		if (arg1 == "program") {
+			string filename;
+			in >> arg2 >> filename;
+			if (arg2 == "execute") {
+				programExecute(filename);
+			}
+			if (arg2 == "create") {
+				programCreate(filename);
+			}
+			if (arg2 == "read") {
+				programRead(filename);
+			}
+			if (arg2 == "write") {
+				string filename;
+				in >> filename;
+				string text;
+				getline(in, text);
+				text.erase(0,1);
+				startThread1 = true;
+				threadText = text;
+				threadFilename = filename;
+			}
+		}
+
+		if (arg1=="yes") {
+			threadAnswer = arg1;
+			startThread2 = true;
+		}
+
+		if (startThread1&&startThread2) {
+			cout << ">> Starting some threads...\n";
+			thread first(programWrite,threadFilename, threadText);
+			cout << ">> Thread 1 was started...\n";
+			thread second(canContinue,threadAnswer);
+			cout << ">> Thread 2 was started...\n";
+
+			first.join();
+			second.join();
+			cout << ">> Threads were joined...\n";
+			startThread1 = false;
+			startThread2 = false;
+			canContinueExecuting = false;
 		}
 
 		if (arg1 == "end") {
@@ -183,11 +227,32 @@ int main(int argc, char const *argv[]) {
 				myOutput << endl;
 			}
 			myOutput.close();
+
+			//save accounts.txt
+			/*
+			myAccounts.open("accounts.txt", std::ios_base::app);
+			myAccounts << username << " " << password << " " << getUACString(username) << endl;
+			myAccounts.close();
+			*/
+
+			myAccounts.open("accounts.txt");
+			for (size_t i = 0; i < numberOfUsers; i++) {
+				myAccounts << listUsers[i].username << " " << listUsers[i].password << " " << getUACString(listUsers[i].username) << endl;
+			}
+			myAccounts.close();
 		}
 
 	}
 
+
+	cout << "_________TEST-OUTPUT__MAP__________" << endl;
+	for(auto it = UAC.cbegin(); it != UAC.cend(); ++it)
+	{
+	    cout << it->first << " " << it->second << "\n";
+	}
+
 /*
+
 	cout << "_________TEST-OUTPUT__STRUCT_______" << endl;
 	for (size_t i = 0; i < numberOfUsers; i++) {
 		cout << listUsers[i].username << " ";
@@ -210,7 +275,6 @@ int main(int argc, char const *argv[]) {
 				cout << groups[i][j] << " "; //  "(" << i << ","<< j<< ") "
 			}
 		}
-
 		cout << endl;
 	}
 
@@ -256,9 +320,62 @@ int main(int argc, char const *argv[]) {
 	return 0;
 }
 
+bool canContinue(string answer) {
+	cout << "Thread 2 should end...\n";
+	if (answer == "yes") {
+		canContinueExecuting = true;
+		return true;
+	} else {
+		canContinueExecuting = false;
+		return false;
+	}
+}
+
+void programExecute(string filename) {
+	if (isLoggedIn) {
+		if (canExecute(whosLoggedIn)) {
+			log(">> ehh, execute i guess?"); //fix this please!
+		}
+	}
+
+}
+
+void programCreate(string filename) {
+	if (isLoggedIn) {
+		// not sure what to do here. No program actually tries to create stuff.
+	}
+}
+
+void programRead(string filename) {
+	//cout << "<< Program Read: " << filename << " : " << canRead(getPermissions(filename,whosLoggedIn)) << " : " << getPermissions(filename, whosLoggedIn) << endl;
+	if (isLoggedIn) {
+		if (canRead(getPermissions(filename,whosLoggedIn))) {
+			string line;
+			fstream myFile;
+			myFile.open(filename);
+			log("program read " + filename + " as:");
+			while (getline(myFile,line)) {
+				log(line);
+			}
+			myFile.close();
+		}
+	}
+}
+
+void programWrite(string filename, string text) {
+	//cout << ">> well here we are: " << canContinueExecuting << "\n";
+
+	//cout << ">> well now we continue: " << canContinueExecuting << "\n";
+	if (canContinueExecuting) {
+		cout << ">> WE ARE WRITING TO FILE!" << endl;
+	}
+	cout << "Thread 1 should end...\n";
+}
+
 void setUAC(string username, string permissions) {
 	if (isLoggedIn) {
 		UAC[username] = permissions;
+		//cout << ">> " << whosLoggedIn << ":" << username << ":" << UAC[username] << ":" << getUACString(username)<< endl;
 		log(getUACString(username));
 	}
 }
@@ -513,6 +630,7 @@ void executeFile(string filename) {
 }
 
 bool canRead(string userPermissions) {
+	//cout << "<< Permissions: " << userPermissions << endl;
 	if (userPermissions.find("R") != std::string::npos) {
     	return true;
 	} else if (userPermissions.find("F") != std::string::npos) {
@@ -616,10 +734,11 @@ bool createUser(string username, string password, int numberOfUsers) {
 					usergroups["Users"].push_back(username);
 				}
 				listUsers[numberOfUsers].username = username;
+				listUsers[numberOfUsers].password = password;
 				UAC[username] = "Change";
 				log("User " + username + " created");
-				myAccounts.open("accounts.txt", std::ios_base::app);
-				myAccounts << username << " " << password << " " << getUACString(username) << endl;
+				myAccounts.open("accounts.txt", ios_base::app);
+				myAccounts << username << " " << password << endl;
 				myAccounts.close();
 				isFirstRun = false;
 
