@@ -721,19 +721,6 @@ vector<string> getUserGroup(string username) { //get the groups a user is in.
 		}
 	}
 
-	/*
-	for (size_t i = 0; i < numberOfUsers; i++) {
-		if (username == listUsers[i].username) {
-			cout << "_-_ " << username << " ";
-			for (size_t j = 0; j < listUsers[i].groups.size(); j++) {
-				userG.push_back(listUsers[i].groups[j]);
-				cout << userG[j] << " ";
-			}
-			cout << "_-_" << endl;
-		}
-	}
-	*/
-
 	return userG; //Return the vector of groups.
 }
 

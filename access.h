@@ -8,23 +8,24 @@
 
 using namespace std;
 
+/*
 struct Users {
 	string username;
 	vector<string> groups;
 	string password;
 };
-
+*/
 string arg1, arg2, arg3, arg4;
 string u, p, g;
-Users *listUsers = new Users[10];
+//Users *listUsers = new Users[10];
 bool isLoggedIn;
 fstream myAccounts;
 fstream myAudit;
 string whosLoggedIn;
 bool wrongUsername, wrongPassword;
 bool isFirstRun = true;
-int groupCount = 0;
-int numberOfUsers = 0;
+//int groupCount = 0;
+//int numberOfUsers = 0;
 bool groupExists = false;
 int checkSetup(vector<string> instructions);
 int checkCommand(string username);
