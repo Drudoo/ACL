@@ -48,11 +48,7 @@ int main(int argc, char const *argv[]) {
 				u = "";
 				in >> g >> u; //Load group and username
 				if(u=="") { //If username doesn't exists, then we create a group.
-					if (createGroup(g)) {
-						groupCount++;
-					} else {
-						log("Error: only an Administrator may issue net group command");
-					}
+					createGroup(g);
 				} else { //Else we add the user to a group.
 					if (addToGroup(u, g)) {
 						log("User " + u + " added to group " + g);
@@ -62,9 +58,7 @@ int main(int argc, char const *argv[]) {
 
 			if (arg2 == "user") { //Create the user.
 				in >> u >> p;
-				if(createUser(u, p)) {
-					numberOfUsers++; ///remove!!!!!!!!!!
-				}
+				createUser(u, p);
 			}
 		}
 
@@ -222,45 +216,61 @@ bool canContinue(string answer) { //Checks the user input based on UAC.
 }
 
 void programExecute(string filename) { //execute file from program.
-	if (isLoggedIn) {
-		if (canExecute(whosLoggedIn)) {
-			log("Program executed " + filename);
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot execute " + filename + " as it is a restricted file");
+	} else {
+		if (isLoggedIn) {
+			if (canExecute(whosLoggedIn)) {
+				log("Program executed " + filename);
+			}
 		}
 	}
 
 }
 
 void programCreate(string filename) { //Create file for program
-	if (isLoggedIn) {
-		createFile(filename);
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot create " + filename + " as it is a restricted name");
+	} else {
+		if (isLoggedIn) {
+			createFile(filename);
+		}
 	}
 }
 
 void programRead(string filename) { //Read the file.
-	if (isLoggedIn) {
-		if (canRead(getPermissions(filename,whosLoggedIn))) { //check if the user can read based on permissions.
-			string line;
-			fstream myFile;
-			myFile.open(filename); //open the file.
-			log("program read " + filename + " as:");
-			while (getline(myFile,line)) { //Read the lines in the file.
-				log(line);
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot read " + filename + " as it is a restricted file");
+	} else {
+		if (isLoggedIn) {
+			if (canRead(getPermissions(filename,whosLoggedIn))) { //check if the user can read based on permissions.
+				string line;
+				fstream myFile;
+				myFile.open(filename); //open the file.
+				log("program read " + filename + " as:");
+				while (getline(myFile,line)) { //Read the lines in the file.
+					log(line);
+				}
+				myFile.close(); //Close the file.
 			}
-			myFile.close(); //Close the file.
 		}
 	}
 }
 
 void programWrite(string filename, string text) { //Write to file.
-	fstream myFile;
-	if (isLoggedIn) {
-		if (canWrite(getPermissions(filename,whosLoggedIn))) { //check if the user can write based on permisssions.
-			myFile.open(filename, std::ios_base::app);
-			myFile << text << endl;
-			myFile.close();
-			log("program wrote to " + filename + ": " + text);
-		} else {
-			log("program denied write access to " + filename);
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot write " + filename + " as it is a restricted file");
+	} else {
+		fstream myFile;
+		if (isLoggedIn) {
+			if (canWrite(getPermissions(filename,whosLoggedIn))) { //check if the user can write based on permisssions.
+				myFile.open(filename, std::ios_base::app);
+				myFile << text << endl;
+				myFile.close();
+				log("program wrote to " + filename + ": " + text);
+			} else {
+				log("program denied write access to " + filename);
+			}
 		}
 	}
 }
@@ -357,20 +367,34 @@ bool fileExist(string filename) { //Check if the file exists by running through 
 	return (permissions.find(filename) != permissions.end())?true:false;
 }
 
+bool isRestrictedName(string filename) { //checks if a filename is restricted.
+	vector<string> restrictedNames = {"accounts.txt", "audit.txt", "groups.txt", "files.txt"};
+	for (auto it : restrictedNames) { //loop through the vector of names
+    	if (!strncasecmp(it,filename)) { //check if any names compare (case insensitive) to the restricted names.
+    		return true;
+    	}
+	}
+	return false;
+}
+
 void createFile(string filename) { //Create the file.
-	if (isLoggedIn) { //check if anotone is logged in.
-		fstream myFile;
-		myFile.open(filename, ios_base::out | ios_base::in);  // Check if the file can be opened. But doesn't create the file.
-		if (!fileExist(filename)) { //Check if the file exists.
-			myFile.open(filename, ios_base::app); //Create the file
-			myFile.close(); //Close the file
-			log("File " + filename + " with owner " + whosLoggedIn + " and default permissions created");
-			setPermissions(filename); //Set permissions based on the filename.
-		} else {
-			log("Error: file " + filename + " already exists");
-		}
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot use " + filename + " as filename");
 	} else {
-		log("Error: Please login to create file");
+		if (isLoggedIn) { //check if anotone is logged in.
+			fstream myFile;
+			myFile.open(filename, ios_base::out | ios_base::in);  // Check if the file can be opened. But doesn't create the file.
+			if (!fileExist(filename)) { //Check if the file exists.
+				myFile.open(filename, ios_base::app); //Create the file
+				myFile.close(); //Close the file
+				log("File " + filename + " with owner " + whosLoggedIn + " and default permissions created");
+				setPermissions(filename); //Set permissions based on the filename.
+			} else {
+				log("Error: file " + filename + " already exists");
+			}
+		} else {
+			log("Error: Please login to create file");
+		}
 	}
 
 }
@@ -445,59 +469,71 @@ bool canWrite(string userPermissions) { //Check if a user can write. User can wr
 }
 
 void writeFile(string filename, string text) { //Write to file.
-	string userPermissions = getPermissions(filename, whosLoggedIn); //get the permissions based on whos is logged in and the filename.
-	fstream myFile;
-
-	if (canWrite(userPermissions)) { //If the user can write then start writing.
-		myFile.open(filename, std::ios_base::app); //Append to the file.
-		myFile << text << endl;
-		myFile.close(); //Close the file.
-		log("User " + whosLoggedIn + " wrote to " + filename + ": " + text);
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot write to " + filename + " as it is a restricted file");
 	} else {
-		log("User " + whosLoggedIn + " denied write access to " + filename);
+		string userPermissions = getPermissions(filename, whosLoggedIn); //get the permissions based on whos is logged in and the filename.
+		fstream myFile;
+
+		if (canWrite(userPermissions)) { //If the user can write then start writing.
+			myFile.open(filename, std::ios_base::app); //Append to the file.
+			myFile << text << endl;
+			myFile.close(); //Close the file.
+			log("User " + whosLoggedIn + " wrote to " + filename + ": " + text);
+		} else {
+			log("User " + whosLoggedIn + " denied write access to " + filename);
+		}
 	}
 
 }
 
 void readFile(string filename) { //Read from file
-	string userPermissions = getPermissions(filename,whosLoggedIn); //get user permissions.
-	if (isLoggedIn) { //Check if anyone is logged in.
-		if (fileExist(filename)) { //Check if file exists
-			if (canRead(userPermissions)) { //check if the user can read.
-				fstream myFile;
-				string line;
-				myFile.open(filename); //Open the file.
-				log("User " + whosLoggedIn + " read " + filename + " as:");
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot read " + filename + " as it is restricted");
+	} else {
+		string userPermissions = getPermissions(filename,whosLoggedIn); //get user permissions.
+		if (isLoggedIn) { //Check if anyone is logged in.
+			if (fileExist(filename)) { //Check if file exists
+				if (canRead(userPermissions)) { //check if the user can read.
+					fstream myFile;
+					string line;
+					myFile.open(filename); //Open the file.
+					log("User " + whosLoggedIn + " read " + filename + " as:");
 
-				while (getline(myFile,line)) { //Read from file.
-					log(line);
+					while (getline(myFile,line)) { //Read from file.
+						log(line);
+					}
+					myFile.close(); // Close file.
+				} else {
+					log("User " + whosLoggedIn + " denied read access to " + filename);
 				}
-				myFile.close(); // Close file.
 			} else {
-				log("User " + whosLoggedIn + " denied read access to " + filename);
+				log("Error: File " + filename + " does not exist");
 			}
 		} else {
-			log("Error: File " + filename + " does not exist");
+			log("Error: no user logged in");
 		}
-	} else {
-		log("Error: no user logged in");
 	}
 }
 
 void executeFile(string filename) { //execute file
-	string userPermissions = getPermissions(filename,whosLoggedIn); //get permissions
- 	if (isLoggedIn) {
- 		if (fileExist(filename)) {
- 			if (canExecute(userPermissions)) {
- 				log("File " + filename + " executed by " + whosLoggedIn);
- 			} else {
-				log("User " + whosLoggedIn + " denied execute access to " + filename);
+	if (isRestrictedName(filename)) { //check if filename is restricted
+		log("Error: Cannot execute " + filename + " as it is a restricted file");
+	} else {
+		string userPermissions = getPermissions(filename,whosLoggedIn); //get permissions
+		if (isLoggedIn) {
+			if (fileExist(filename)) {
+				if (canExecute(userPermissions)) {
+					log("File " + filename + " executed by " + whosLoggedIn);
+				} else {
+					log("User " + whosLoggedIn + " denied execute access to " + filename);
+				}
+			} else {
+				log("Error: File " + filename + " does not exist");
 			}
- 		} else {
-			log("Error: File " + filename + " does not exist");
+		} else {
+			log("Error: no user logged in");
 		}
- 	} else {
-		log("Error: no user logged in");
 	}
 }
 
@@ -601,31 +637,6 @@ bool createUser(string username, string password) { //Create a new user.
 			log("Error: user " + username + " already exists");
 			return false;
 		}
-		/*
-		if (!(find(groups[1].begin(), groups[1].end(), username) != groups[1].end())) {
-			if (!checkCommand(username)) {
-				if(username!="admin") { //admin should not be part of group Users
-					groups[1].push_back(username);
-					listUsers[numberOfUsers].groups.push_back("Users");
-					usergroups["Users"].push_back(username);
-				}
-				userMap[username] = password;
-				listUsers[numberOfUsers].username = username;
-				listUsers[numberOfUsers].password = password;
-				UAC[username] = "Change";
-				log("User " + username + " created");
-				myAccounts.open("accounts.txt", ios_base::app);
-				myAccounts << username << " " << password << endl;
-				myAccounts.close();
-				isFirstRun = false;
-
-				log(getUACString(username));
-			}
-		} else {
-			log("Error: user " + username + " already exists");
-			return false;
-		}
-		*/
 		return true;
 	} else {
 		log("Error: only an Administrator may issue net user command");

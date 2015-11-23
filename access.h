@@ -74,3 +74,5 @@ void programExecute(string filename);
 void programCreate(string filename);
 void programRead(string filename);
 void programWrite(string filename, string text);
+
+bool isRestrictedName(string filename);
