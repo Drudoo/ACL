@@ -384,7 +384,7 @@ void createFile(string filename) { //Create the file.
 		if (isLoggedIn) { //check if anotone is logged in.
 			fstream myFile;
 			myFile.open(filename, ios_base::out | ios_base::in);  // Check if the file can be opened. But doesn't create the file.
-			if (myFile.is_open()) { //if the file exists, then remove it before creating a new one. 
+			if (myFile.is_open()) { //if the file exists, then remove it before creating a new one.
 				remove(filename.c_str());
 			}
 			myFile.close();
