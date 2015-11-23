@@ -1,9 +1,5 @@
 #include "access.h"
 
-//vector< vector<string> > groups(10, vector<string>(1)); //Only supports 10 user groups. Variable is global, so we don't have to pass it all the time.
-
-
-
 int main(int argc, char const *argv[]) {
 
 	vector<string> instructions; //for loading instructions from the file.
