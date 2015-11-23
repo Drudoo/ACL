@@ -1,6 +1,6 @@
 #include "access.h"
 
-vector< vector<string> > groups(10, vector<string>(1)); //Only supports 10 user groups. Variable is global, so we don't have to pass it all the time.
+//vector< vector<string> > groups(10, vector<string>(1)); //Only supports 10 user groups. Variable is global, so we don't have to pass it all the time.
 
 
 
@@ -67,7 +67,7 @@ int main(int argc, char const *argv[]) {
 			if (arg2 == "user") { //Create the user.
 				in >> u >> p;
 				if(createUser(u, p)) {
-					numberOfUsers++;
+					numberOfUsers++; ///remove!!!!!!!!!!
 				}
 			}
 		}
@@ -214,107 +214,6 @@ int main(int argc, char const *argv[]) {
 		}
 
 	}
-
-
-	cout << "_________TEST-OUTPUT__UAC__________" << endl;
-	for(auto it = UAC.cbegin(); it != UAC.cend(); ++it)
-	{
-	    cout << it->first << " " << it->second << "\n";
-	}
-
-	cout << "_________TEST-OUTPUT__userMap______" << endl;
-	for (auto map : userMap) {
-		cout << map.first << " " << map.second << endl;
-	}
-
-	cout << "_________TEST-OUTPUT__usergroups___" << endl;
-	for (auto map : usergroups) {
-		vector<string> itVector = map.second;
-		cout << map.first << " ";
-		for (size_t i = 0; i < itVector.size(); i++) {
-			cout << itVector[i] << " ";
-		}
-		cout << endl;
-	}
-
-	cout << "_________TEST-OUTPUT__permissions__" << endl;
-	for (auto map : permissions) {
-		vector<string> itVector = map.second;
-		cout << map.first << " ";
-		for (size_t i = 0; i < itVector.size(); i++) {
-			cout << itVector[i] << " ";
-		}
-		cout << endl;
-	}
-
-	cout << "_________TEST-OUTPUT_______________" << endl;
-	cout << ((userMap["bob"]!="")?1:0) << endl;
-/*
-
-	cout << "_________TEST-OUTPUT__STRUCT_______" << endl;
-	for (size_t i = 0; i < numberOfUsers; i++) {
-		cout << listUsers[i].username << " ";
-		for (size_t j = 0; j < listUsers[i].groups.size(); j++) {
-			cout << listUsers[i].groups[j] << " ";
-		}
-		cout << endl;
-	}
-
-	//vector<string> testGroups = getUserGroup("admin",count);
-
-	cout << "_________TEST-OUTPUT__VECTOR_______" << endl;
-	for (size_t i = 0; i < groupCount; i++) {
-		if (groups[i].size() < groups[i+1].size()) {
-			for (size_t j = 0; j < groups[i].size(); j++) {
-				cout << groups[i][j] << " "; // "(" << i << ","<< j<< ") "
-			}
-		} else {
-			for (size_t j = 0; j < groups[i].size(); j++) {
-				cout << groups[i][j] << " "; //  "(" << i << ","<< j<< ") "
-			}
-		}
-		cout << endl;
-	}
-
-	cout << "_________TEST-OUTPUT_______________" << endl;
-	for (size_t i = 0; i < numberOfUsers; i++) {
-		cout << listUsers[i].username << endl;
-	}
-
-	cout << "_________TEST-OUTPUT__MAP__________" << endl;
-	for(map<string, vector<string> >::iterator it = permissions.begin(); it != permissions.end(); it++) {
-		cout << it->first << ": ";
-		vector<string> itVector = it->second;
-		for (size_t j = 0; j < itVector.size(); j++) {
-			cout << itVector[j] << " ";
-		}
-		cout << endl;
-	}
-	cout << "_________TEST-OUTPUT__MAP__________" << endl;
-	for(map<string, vector<string> >::iterator it = usergroups.begin(); it != usergroups.end(); it++) {
-		cout << it->first << ": ";
-		vector<string> itVector = it->second;
-		for (size_t j = 0; j < itVector.size(); j++) {
-			cout << itVector[j] << " ";
-		}
-		cout << endl;
-	}
-
-	cout << "_________TEST-OUTPUT__Files________" << endl;
-	string line;
-
-	myAccounts.open("file1.txt");
-	while (getline(myAccounts,line)) {
-		cout << line << endl;
-	}
-	myAccounts.close();
-	myAccounts.open("file2.txt");
-	while (getline(myAccounts,line)) {
-		cout << line << endl;
-	}
-	myAccounts.close();
-*/
-
 	return 0;
 }
 
@@ -505,20 +404,6 @@ string getPermissions(string filename, string username) { //Get the permissions 
 		}
 	}
 	string s1,s2;
-	/*
-	for (size_t i = 0; i < permissions[filename].size(); i++) { //Run through the permissions.
-		size_t pos = permissions[filename][i].find(":"); //find where the colon is
-		s1 = permissions[filename][i].substr(0,pos); // Then get the permission from start until the colon.
-		for (auto map : usergroups) { //Run through the usergroups.
-			s2 = map.first;
-			if (strncasecmp(s1,s2)==0) { //If the usergroups compare to the name in from the permissions map then append the groups permission
-				cout << ">> " << s1 << " " << s2 << endl;
-				highestGroupPermissionLevel += permissions[filename][i].substr(s1.length()+1);
-			}
-		}
-	}
-	*/
-
 
 	for (size_t i = 1; i < permissions[filename].size(); i++) {
 		for (size_t j = 0; j < group.size(); j++) {
@@ -660,32 +545,6 @@ bool addToGroup(string username, string groupname) { //Add user to group.
 	} else {
 		log("Error: only an Administrator may issue net group command");
 	}
-
-	/*
-	if (groupCount == 1 || isAdmin(whosLoggedIn)) {
-		for (size_t m = 0; m < numberOfUsers; m++) {
-			if (username == listUsers[m].username) {
-				temp = m;
-				foundUser = true;
-			}
-		}
-		if (foundUser) {
-			for (size_t k = 0; k < groupCount; k++) {
-				if (groupname == groups[k][0]) {
-					groups[k].push_back(u);
-					listUsers[temp].groups.push_back(g);
-					usergroups[groupname].push_back(username);
-					return true;
-				}
-			}
-			log("Group " + groupname + " does not exist");
-		} else {
-			log("User " + username + " does not exist");
-		}
-	} else {
-		log("Error: only an Administrator may issue net group command");
-	}
-	*/
 	return false;
 
 }
@@ -707,35 +566,6 @@ bool createGroup(string groupname) { //Create group
 		usergroups[groupname]; //create group.
 		log("Group " + g + " created");
 	}
-
-/*
-
-	if (groupCount>0) {
-		if (isAdmin(whosLoggedIn)) {
-			for (size_t j = 0; j < groupCount; j++) {
-				if (g == groups[j][0]) {
-					groupExists = true;
-					break;
-				}
-			}
-			if (!groupExists) {
-				groups[groupCount][0] = g;
-				usergroups[g];
-				log("Group " + g + " created");
-			} else {
-				log("Error: Group " + g + " already exists");
-				groupCount--;
-			}
-			groupExists=false;
-		} else {
-			return false;
-		}
-	} else {
-		groups[groupCount][0] = g;
-		usergroups[g];
-		log("Group " + g + " created");
-	}
-	*/
 	return true;
 }
 
