@@ -1,3 +1,16 @@
+# ACL
+
+> Simple Access Control List system done in C++
+
+## CS 465 Introduction to Computer Security:
+###Programming Assignment #2
+
+	Due on December 2nd, 2015
+	Frederik Berentsen
+	Login: xxxxxxxxx
+	ID: xxxxxxxxx
+	Email: xxxxxxxxx@mix.wvu.edu
+
 CS 465 Introduction to Computer Security:Programming Assignment #2
 Due on December 2nd, 2015
 Frederik Berentsen
