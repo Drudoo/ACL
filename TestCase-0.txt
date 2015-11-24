@@ -1,6 +1,0 @@
-net user admin ya84*_o
-net group Administrators
-net group Administrators admin
-net group Users
-login admin ya84*_o
-program write groups.txt hey how goes
