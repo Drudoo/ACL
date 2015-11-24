@@ -1,0 +1,3 @@
+adminLog.txt admin (admin:F,Administrators:F,Users:R,Students:D,Testers:D)
+assignment.txt alice (alice:F,Administrators:F,Students:RW)
+notes.txt bob (bob:F,Administrators:F,Users:RW)

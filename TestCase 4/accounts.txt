@@ -1,0 +1,4 @@
+admin p4ssw0rd Always notify
+alice CS_rocks Notify only on change
+bob wvu4ever Notify only on change
+ross g1thub_1s_c00l Notify only on change

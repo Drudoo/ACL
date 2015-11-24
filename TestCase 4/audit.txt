@@ -1,0 +1,58 @@
+User admin created
+Notify only on change
+Group Administrators created
+User admin added to group Administrators
+Group Users created
+Login failed: invalid username or password
+User admin logged in
+Always notify
+User bob created
+Notify only on change
+User alice created
+Notify only on change
+Group Students created
+User alice added to group Students
+User bob added to group Students
+User admin logged out
+User bob logged in
+File notes.txt with owner bob and default permissions created
+User bob wrote to notes.txt: I'm soon done with classes
+User bob logged out
+User alice logged in
+Error: only an Administrator may issue net user command
+User alice denied write access to notes.txt
+User alice logged out
+User bob logged in
+The ACL for notes.txt appended by bob to include Users:RW
+User bob logged out
+User alice logged in
+User alice wrote to notes.txt: Trying again... So am I!
+File assignment.txt with owner alice and default permissions created
+User alice wrote to assignment.txt: Lorem ipsum dolor sit amet.
+The ACL for assignment.txt appended by alice to include Students:RW
+User alice logged out
+User admin logged in
+User ross created
+Notify only on change
+Group Testers created
+User ross added to group Testers
+File adminLog.txt with owner admin and default permissions created
+The ACL for adminLog.txt appended by admin to include Students:D
+The ACL for adminLog.txt appended by admin to include Testers:D
+User admin wrote to adminLog.txt: This is just for admins!
+program wrote to adminLog.txt: No students allowed!
+User admin logged out
+User ross logged in
+User ross denied read access to adminLog.txt
+User ross denied read access to assignment.txt
+User ross denied write access to assignment.txt
+User ross wrote to notes.txt: Why can't I write to assignment.txt?
+User ross logged out
+User bob logged in
+User bob read assignment.txt as:
+Lorem ipsum dolor sit amet.
+User bob read notes.txt as:
+I'm soon done with classes
+Trying again... So am I!
+Why can't I write to assignment.txt?
+User bob logged out

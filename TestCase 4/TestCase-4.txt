@@ -1,0 +1,54 @@
+net user admin p4ssw0rd
+net group Administrators
+net group Administrators admin
+net group Users
+login admin passw0rd
+login admin p4ssw0rd
+uac Always
+net user bob wvu4ever
+net user alice CS_rocks
+net group Students
+net group Students alice
+net group Students bob
+logout
+login bob wvu4ever
+create notes.txt
+write notes.txt I'm soon done with classes
+logout
+login alice CS_rocks
+net user root ssh1234
+write notes.txt So am I!
+logout
+login bob wvu4ever
+xcacls notes.txt /E /G Users:RW
+logout
+login alice CS_rocks
+write notes.txt Trying again... So am I!
+create assignment.txt
+write assignment.txt Lorem ipsum dolor sit amet.
+xcacls assignment.txt /E /G Students:RW
+logout
+login admin p4ssw0rd
+net user ross g1thub_1s_c00l
+net group Testers
+net group Testers ross
+create adminLog.txt
+xcacls adminLog.txt /E /G Students:D
+xcacls adminLog.txt /E /G Testers:D
+write adminLog.txt This is just for admins!
+program write adminLog.txt and admin programs!
+no
+program write adminLog.txt No students allowed!
+yes
+logout
+login ross g1thub_1s_c00l
+read adminLog.txt
+read assignment.txt
+write assignment.txt consectetur adipisicing elit
+write notes.txt Why can't I write to assignment.txt?
+logout
+login bob wvu4ever
+read assignment.txt
+read notes.txt
+logout
+end

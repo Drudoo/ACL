@@ -1,0 +1,3 @@
+I'm soon done with classes
+Trying again... So am I!
+Why can't I write to assignment.txt?
