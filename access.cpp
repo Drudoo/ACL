@@ -472,20 +472,24 @@ bool canWrite(string userPermissions) { //Check if a user can write. User can wr
 }
 
 void writeFile(string filename, string text) { //Write to file.
-	if (isRestrictedName(filename)) { //check if filename is restricted
-		log("Error: Cannot write to " + filename + " as it is a restricted file");
-	} else {
-		string userPermissions = getPermissions(filename, whosLoggedIn); //get the permissions based on whos is logged in and the filename.
-		fstream myFile;
-
-		if (canWrite(userPermissions)) { //If the user can write then start writing.
-			myFile.open(filename, std::ios_base::app); //Append to the file.
-			myFile << text << endl;
-			myFile.close(); //Close the file.
-			log("User " + whosLoggedIn + " wrote to " + filename + ": " + text);
+	if (isLoggedIn) { //Check if anyone is logged in.
+		if (isRestrictedName(filename)) { //check if filename is restricted
+			log("Error: Cannot write to " + filename + " as it is a restricted file");
 		} else {
-			log("User " + whosLoggedIn + " denied write access to " + filename);
+			string userPermissions = getPermissions(filename, whosLoggedIn); //get the permissions based on whos is logged in and the filename.
+			fstream myFile;
+
+			if (canWrite(userPermissions)) { //If the user can write then start writing.
+				myFile.open(filename, std::ios_base::app); //Append to the file.
+				myFile << text << endl;
+				myFile.close(); //Close the file.
+				log("User " + whosLoggedIn + " wrote to " + filename + ": " + text);
+			} else {
+				log("User " + whosLoggedIn + " denied write access to " + filename);
+			}
 		}
+	} else {
+		log("Error: no user logged in");
 	}
 
 }
