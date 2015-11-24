@@ -5,7 +5,7 @@ int main(int argc, char const *argv[]) {
 	vector<string> instructions; //for loading instructions from the file.
 	whosLoggedIn = "admin"; //admin is logged in from the start to create the default groups and admin user.
 	if (argc < 2) { //if we don't have a filename, give an error and exit.
-		cout << "Error: Please specify a filename.\nUse the format './access filename'" << endl;
+		log("Error: Please specify a filename.\nUse the format './access filename'");
 		return 1;
 	} else {
 		ifstream myInput (argv[1]);
@@ -16,7 +16,7 @@ int main(int argc, char const *argv[]) {
 			}
 			myInput.close();
 		} else {
-			cout << "Error: Cannot open file: " << argv[1] << "\nExiting...\n" << endl;
+			log("Error: Cannot open file: " + string(argv[1]) + "\nExiting...\n");
 			return 1;
 		}
 	}
@@ -443,8 +443,6 @@ string getPermissions(string filename, string username) { //Get the permissions 
 		}
 	}
 
-
-	//cout << ">> " << highestUserPermissionLevel+highestGroupPermissionLevel << endl;
 	//Check if either group or user is denied.
 	if (contains(highestUserPermissionLevel,"D") || contains(highestGroupPermissionLevel,"D")) {
 		return "D";
