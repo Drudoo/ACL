@@ -383,12 +383,13 @@ void createFile(string filename) { //Create the file.
 	} else {
 		if (isLoggedIn) { //check if anotone is logged in.
 			fstream myFile;
-			myFile.open(filename, ios_base::out | ios_base::in);  // Check if the file can be opened. But doesn't create the file.
-			if (myFile.is_open()) { //if the file exists, then remove it before creating a new one.
-				remove(filename.c_str());
-			}
-			myFile.close();
-			if (!fileExist(filename)) { //Check if the file exists.
+			if (!fileExist(filename)) { //Check if the file exists in the program.
+				//Remove file if it is leftover from previous execution of the program
+				myFile.open(filename, ios_base::out | ios_base::in);  // Check if the file can be opened. But doesn't create the file.
+				if (myFile.is_open()) { //if the file exists, then remove it before creating a new one.
+					remove(filename.c_str());
+				}
+				myFile.close();
 				myFile.open(filename, ios_base::app); //Create the file
 				myFile.close(); //Close the file
 				log("File " + filename + " with owner " + whosLoggedIn + " and default permissions created");
@@ -562,7 +563,6 @@ bool canExecute(string userPermissions) { //check if user can execute.
 }
 
 bool addToGroup(string username, string groupname) { //Add user to group.
-
 	if (usergroups[groupname].empty() || isAdmin(whosLoggedIn)) {
 		if (userMap.find(username) != userMap.end()) { //check if user exists
 			if (usergroups.find(groupname) != usergroups.end()) {
@@ -573,9 +573,7 @@ bool addToGroup(string username, string groupname) { //Add user to group.
 			}
 		} else {
 			log("User " + username + " does not exist");
-			return false;
 		}
-
 	} else {
 		log("Error: only an Administrator may issue net group command");
 	}
@@ -584,7 +582,6 @@ bool addToGroup(string username, string groupname) { //Add user to group.
 }
 
 bool createGroup(string groupname) { //Create group
-
 	if (!usergroups.empty()) { //check if we don't have any groups.
 		if (isAdmin(whosLoggedIn)) { //check if logged in user is admin.
 			if (usergroups.find(groupname) == usergroups.end()) { //check if group already exist
@@ -594,13 +591,15 @@ bool createGroup(string groupname) { //Create group
 				log("Error: Group " + g + " already exists");
 			}
 		} else {
+			log("Error: only an Administrator may issue net group command");
 			return false;
 		}
 	} else {
 		usergroups[groupname]; //create group.
 		log("Group " + g + " created");
 	}
-	return true;
+
+	return false;
 }
 
 bool isAdmin(string username) { //check if the user is admin.
