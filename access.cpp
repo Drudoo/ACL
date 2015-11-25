@@ -2,7 +2,6 @@
 
 int main(int argc, char const *argv[]) {
 
-	vector<string> instructions; //for loading instructions from the file.
 	whosLoggedIn = "admin"; //admin is logged in from the start to create the default groups and admin user.
 	if (argc < 2) { //if we don't have a filename, give an error and exit.
 		log("Error: Please specify a filename.\nUse the format './access filename'");
@@ -126,13 +125,31 @@ int main(int argc, char const *argv[]) {
 			string filename;
 			in >> arg2 >> filename; //Load either exe, create, read, write and the filename
 			if (arg2 == "execute") {
-				programExecute(filename);
+				if (getUAC(whosLoggedIn) == "Never") { //Check the UAC. If it is Never, then just read the file.
+					programExecute(filename); //Read text file.
+				} else { //If UAC is any other, then check what the next line is.
+					if (canContinue(instructions[i+1])) { //get the answer from the user, which is the next instruction.
+						programExecute(filename);
+					}
+				}
 			}
 			if (arg2 == "create") {
-				programCreate(filename);
+				if (getUAC(whosLoggedIn) == "Never") { //Check the UAC. If it is Never, then just read the file.
+					programCreate(filename); //Read text file.
+				} else { //If UAC is any other, then check what the next line is.
+					if (canContinue(instructions[i+1])) { //get the answer from the user, which is the next instruction.
+						programCreate(filename);
+					}
+				}
 			}
 			if (arg2 == "read") {
-				programRead(filename);
+				if (getUAC(whosLoggedIn) == "Never") { //Check the UAC. If it is Never, then just read the file.
+					programRead(filename); //Read text file.
+				} else { //If UAC is any other, then check what the next line is.
+					if (canContinue(instructions[i+1])) { //get the answer from the user, which is the next instruction.
+						programRead(filename);
+					}
+				}
 			}
 			if (arg2 == "write") {
 				string text;
@@ -141,13 +158,10 @@ int main(int argc, char const *argv[]) {
 				if (getUAC(whosLoggedIn) == "Never") { //Check the UAC. If it is Never, then just write to file.
 					programWrite(filename,text); //Write text to file.
 				} else { //If UAC is any other, then check what the next line is.
-					string tempAnswer = instructions[i+1]; //get the answer from the user, which is the next instruction.
-					tempAnswer.erase( std::remove(tempAnswer.begin(), tempAnswer.end(), '\r'), tempAnswer.end() ); //Remove the Carriage Return from the line.
-					if (canContinue(tempAnswer)) { //check if the program can continue.
-						programWrite(filename,text); //If it can, then continue and write to file.
+					if (canContinue(instructions[i+1])) {
+						programWrite(filename,text);
 					}
 				}
-
 			}
 		}
 
@@ -208,7 +222,9 @@ int main(int argc, char const *argv[]) {
 }
 
 bool canContinue(string answer) { //Checks the user input based on UAC.
-	if (answer == "yes") {
+
+	answer.erase( std::remove(answer.begin(), answer.end(), '\r'), answer.end() ); //Remove the Carriage Return from the line.
+	if (answer == "yes") { //check if the program can continue.
 		return true;
 	} else {
 		return false;
@@ -220,8 +236,14 @@ void programExecute(string filename) { //execute file from program.
 		log("Error: Cannot execute " + filename + " as it is a restricted file");
 	} else {
 		if (isLoggedIn) {
-			if (canExecute(whosLoggedIn)) {
+			string userPermissions = getPermissions(filename,whosLoggedIn); //get permissions
+			if (canExecute(userPermissions)) {
 				log("Program executed " + filename);
+				system(string("chmod +x "+filename).c_str()); //Just a little fun so we can actually execute scripts.
+				string scriptName = "/bin/bash -c ./" + filename;
+				system(scriptName.c_str());
+			} else {
+				log("program denied execute access to " + filename);
 			}
 		}
 	}
@@ -252,6 +274,8 @@ void programRead(string filename) { //Read the file.
 					log(line);
 				}
 				myFile.close(); //Close the file.
+			} else {
+				log("program denied read access to " + filename);
 			}
 		}
 	}
@@ -546,9 +570,9 @@ void executeFile(string filename) { //execute file
 
 bool canRead(string userPermissions) { //check if user can read.
 	//User can read if permissions contain either R or F.
-	if (contains(userPermissions, "R")) {
+	if (userPermissions.find("R") != std::string::npos) {
     	return true;
-	} else if (contains(userPermissions, "F")) {
+	} else if (userPermissions.find("F") != std::string::npos) {
 		return true;
 	} else {
 		return false;
@@ -557,9 +581,9 @@ bool canRead(string userPermissions) { //check if user can read.
 
 bool canExecute(string userPermissions) { //check if user can execute.
 	//User can execute if permissions contain either X or F.
-	if (contains(userPermissions, "X")) {
+	if (userPermissions.find("X") != std::string::npos) {
     	return true;
-	} else if (contains(userPermissions, "F")) {
+	} else if (userPermissions.find("F") != std::string::npos) {
 		return true;
 	} else {
 		return false;
@@ -579,7 +603,12 @@ bool addToGroup(string username, string groupname) { //Add user to group.
 			log("User " + username + " does not exist");
 		}
 	} else {
-		log("Error: only an Administrator may issue net group command");
+		if (whosLoggedIn == "") {
+			log("Error: no user logged in");
+		} else {
+			log("Error: only an Administrator may issue net group command");
+		}
+		return false;
 	}
 	return false;
 
@@ -595,14 +624,17 @@ bool createGroup(string groupname) { //Create group
 				log("Error: Group " + g + " already exists");
 			}
 		} else {
-			log("Error: only an Administrator may issue net group command");
+			if (whosLoggedIn == "") {
+				log("Error: no user logged in");
+			} else {
+				log("Error: only an Administrator may issue net group command");
+			}
 			return false;
 		}
 	} else {
 		usergroups[groupname]; //create group.
 		log("Group " + g + " created");
 	}
-
 	return false;
 }
 

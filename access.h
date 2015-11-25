@@ -5,6 +5,7 @@
 #include <regex>
 #include <sstream>
 #include <map>
+#include <stdlib.h> //for fun bash command.
 
 using namespace std;
 
@@ -34,7 +35,7 @@ void createFile(string filename);
 bool strncasecmp(string s1, string s2);
 
 vector<string> getUserGroup(string username);
-
+vector<string> instructions; //for loading instructions from file.
 bool canContinue(string answer);
 
 bool contains(string s1, string s2);
