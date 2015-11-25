@@ -239,9 +239,10 @@ void programExecute(string filename) { //execute file from program.
 			string userPermissions = getPermissions(filename,whosLoggedIn); //get permissions
 			if (canExecute(userPermissions)) {
 				log("Program executed " + filename);
-				system(string("chmod +x "+filename).c_str()); //Just a little fun so we can actually execute scripts.
-				string scriptName = "/bin/bash -c ./" + filename;
-				system(scriptName.c_str());
+				//Just a little fun so we can actually execute scripts when using 'program execute'.
+				system(string("chmod +x "+filename).c_str()); //set actual execute permissions of file.
+				string scriptName = "./" + filename; //Append so we can run the script.
+				system(scriptName.c_str()); //Run the script. 
 			} else {
 				log("program denied execute access to " + filename);
 			}
