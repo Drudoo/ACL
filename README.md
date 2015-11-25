@@ -43,7 +43,7 @@ The file audit.txt contains the result. All other necessary files are also creat
 
 Note:
 
-- When using ``program execute`` the program actually execute the script if it is a bash script. This is done using ``system()``. This is used in TestCase-5 and mostly just for fun. Since ``program execute`` is not used in either TestCase-1, 2 or 3, I didn't see any problem in extending it. 
+- When using ``program execute`` the program actually execute the script if it is a bash script. This is done using ``system()``. This is used in TestCase-5 and mostly just for fun. Since ``program execute`` is not used in either TestCase-1, 2 or 3, I didn't see any problem in extending it.
 
 
 - My program outputs the groups.txt file in alphabetical order, not the order they are created. This is because they are stored in a ``map``. I assume this is not a problem.
