@@ -24,6 +24,8 @@ The program contains two (2) files:
 - access.h
 - access.cpp
 
+Two extra folders are provided with TestCase-4 and 5.
+
 In addition, the zip contains TestCase-1, 2 and 3 files.
 
 access.cpp contains the main part of the program (including the main function).
@@ -40,6 +42,9 @@ The program passes all three (3) test cases. The program also passes the extra c
 The file audit.txt contains the result. All other necessary files are also created.
 
 Note:
+
+- When using ``program execute`` the program actually execute the script if it is a bash script. This is done using ``system()``. This is used in TestCase-5 and mostly just for fun. Since ``program execute`` is not used in either TestCase-1, 2 or 3, I didn't see any problem in extending it. 
+
 
 - My program outputs the groups.txt file in alphabetical order, not the order they are created. This is because they are stored in a ``map``. I assume this is not a problem.
 
