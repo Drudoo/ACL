@@ -1,0 +1,72 @@
+User admin created
+Notify only on change
+Group Administrators created
+User admin added to group Administrators
+Group Users created
+User admin logged in
+Always notify
+User john created
+Notify only on change
+User admin logged out
+User john logged in
+Never notify
+Error: Cannot create accounts.txt as it is a restricted name
+File accountNames.txt with owner john and default permissions created
+program wrote to accountNames.txt: John
+User john read accountNames.txt as:
+John
+User john logged out
+Login failed: invalid username or password
+Error: no user logged in
+User admin logged in
+Group Testers created
+User john added to group Testers
+File log.txt with owner admin and default permissions created
+program wrote to log.txt: Today was a good day.
+User rob created
+Notify only on change
+User rob added to group Testers
+Group Programmers created
+User veronica created
+Notify only on change
+User veronica added to group Programmers
+User admin logged out
+User veronica logged in
+Always notify
+File script.sh with owner veronica and default permissions created
+User veronica wrote to script.sh: #!/bin/bash
+program wrote to script.sh: echo count to 4:
+The ACL for script.sh appended by veronica to include Testers:X
+User veronica logged out
+User rob logged in
+Never notify
+program denied read access to script.sh
+Program executed script.sh
+User rob logged out
+User veronica logged in
+User veronica wrote to script.sh: COUNTER=0
+User veronica wrote to script.sh: while [  $COUNTER -lt 5 ]; do
+User veronica wrote to script.sh: echo $COUNTER
+User veronica wrote to script.sh: let COUNTER=COUNTER+1
+User veronica wrote to script.sh: done
+User veronica read script.sh as:
+#!/bin/bash
+echo count to 4:
+COUNTER=0
+while [  $COUNTER -lt 5 ]; do
+echo $COUNTER
+let COUNTER=COUNTER+1
+done
+program wrote to script.sh: echo counter is done!
+User veronica logged out
+User john logged in
+Program executed script.sh
+User john logged out
+User admin logged in
+User admin wrote to accountNames.txt: Rob
+User admin wrote to accountNames.txt: Veronica
+program read accountNames.txt as:
+John
+Rob
+Veronica
+User admin logged out
