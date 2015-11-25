@@ -57,7 +57,7 @@ while [  $COUNTER -lt 5 ]; do
 echo $COUNTER
 let COUNTER=COUNTER+1
 done
-program wrote to script.sh: echo counter is done!
+program wrote to script.sh: echo ...Done!
 User veronica logged out
 User john logged in
 Program executed script.sh
@@ -65,6 +65,10 @@ User john logged out
 User admin logged in
 User admin wrote to accountNames.txt: Rob
 User admin wrote to accountNames.txt: Veronica
+User admin wrote to log.txt: Finished adding account names.
+User admin read log.txt as:
+Today was a good day.
+Finished adding account names.
 program read accountNames.txt as:
 John
 Rob

@@ -48,7 +48,7 @@ write script.sh echo $COUNTER
 write script.sh let COUNTER=COUNTER+1
 write script.sh done
 read script.sh
-program write script.sh echo counter is done!
+program write script.sh echo ...Done!
 yes
 logout
 login john &DS4H(h)
@@ -57,6 +57,8 @@ logout
 login admin h4cks_*&/
 write accountNames.txt Rob
 write accountNames.txt Veronica
+write log.txt Finished adding account names.
+read log.txt
 program read accountNames.txt
 yes
 logout
