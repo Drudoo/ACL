@@ -87,21 +87,26 @@ int main(int argc, char const *argv[]) {
 		if (arg1 == "xcacls") { //Change permissions
 			string filename, uORg, newPermissions;
 			in >> filename >> arg2; //Load the filename and the arguments
-			if (arg2 == "/E") { //Edit permissions
-				in >> uORg >> newPermissions; //Load if it is a user or group and the new permissions
-				if (uORg == "/P") {
-					replacePermissions(filename, newPermissions, uORg);
-				} else if (uORg == "/D") {
-					denyPermissions(filename, newPermissions);
-				} else {
-					editPermissions(filename, newPermissions, uORg);
+			if (isRestrictedName(filename)) {
+				log("Error: Cannot change permission for " + filename + " as it is a restricted file");
+			} else {
+				if (arg2 == "/E") { //Edit permissions
+					in >> uORg >> newPermissions; //Load if it is a user or group and the new permissions
+					if (uORg == "/P") {
+						replacePermissions(filename, newPermissions, uORg);
+					} else if (uORg == "/D") {
+						denyPermissions(filename, newPermissions);
+					} else {
+						editPermissions(filename, newPermissions, uORg);
+					}
+				} else { //Replace permissions
+					in >> uORg;
+					replacePermissions(filename,newPermissions, uORg);
+
+
 				}
-			} else { //Replace permissions
-				in >> uORg;
-				replacePermissions(filename,newPermissions, uORg);
-
-
 			}
+
 		}
 
 		if (arg1 == "read") { //Read a file
@@ -366,6 +371,7 @@ void denyPermissions(string filename, string newPermissions) { //Set permissions
 
 
 void replacePermissions(string filename, string newPermissions, string uORg) {
+	bool found = false;
 	if (isLoggedIn) {
 		if (fileExist(filename)) { //check if the file exists.
 			if (isOwner(filename,whosLoggedIn) || isAdmin(whosLoggedIn)) { //check if user is admin or owner.
@@ -375,7 +381,11 @@ void replacePermissions(string filename, string newPermissions, string uORg) {
 					if (permissions[filename][i].substr(0,whosLoggedIn.length()) == tempUsername) { //Check if the username is the same as the permissions.
 						permissions[filename][i] = newPermissions; //replace the permission
 						log("User " + tempUsername + " access to file " + filename + " changed to " + newPermissions.substr(whosLoggedIn.length()+1) + " by " + whosLoggedIn);
+						found=true;
 					}
+				}
+				if(!found) {
+					log("Error: Username does not exist");
 				}
 			} else {
 				log("Error with xcacls: Only file owner or member of Administrators group may run command");
@@ -595,8 +605,13 @@ bool addToGroup(string username, string groupname) { //Add user to group.
 	if (usergroups[groupname].empty() || isAdmin(whosLoggedIn)) {
 		if (userMap.find(username) != userMap.end()) { //check if user exists
 			if (usergroups.find(groupname) != usergroups.end()) {
-				usergroups[groupname].push_back(username);
-				return true;
+				if (find(usergroups[groupname].begin(), usergroups[groupname].end(), username) != usergroups[groupname].end()) {
+					log("User " + username + " is already member of " + groupname);
+					return false;
+				} else {
+					usergroups[groupname].push_back(username);
+					return true;
+				}
 			} else {
 				log("Group " + groupname + " does not exist");
 			}
@@ -677,7 +692,11 @@ bool createUser(string username, string password) { //Create a new user.
 		}
 		return true;
 	} else {
-		log("Error: only an Administrator may issue net user command");
+		if (whosLoggedIn == "") {
+			log("Error: no user logged in");
+		} else {
+			log("Error: only an Administrator may issue net user command");
+		}
 		return false;
 	}
 }
