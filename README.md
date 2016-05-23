@@ -11,13 +11,6 @@
 	ID: xxxxxxxxx
 	Email: xxxxxxxxx@mix.wvu.edu
 
-CS 465 Introduction to Computer Security:Programming Assignment #2
-Due on December 2nd, 2015
-Frederik Berentsen
-Login: fsberentsen
-ID: 800153924
-Email: fsberentsen@mix.wvu.edu
-
 The program is written in C++ and assumed that C++11 support is available.
 
 The program contains two (2) files:
